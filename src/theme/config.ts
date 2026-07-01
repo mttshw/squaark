@@ -56,10 +56,12 @@ export function resolveConfigNested(
 /** Generates a <style> block injecting CSS custom properties from config. */
 export function buildCssVars(resolved: Record<string, unknown>): string {
   const CSS_MAP: Record<string, string> = {
-    'colors.primary':    '--color-primary',
-    'colors.accent':     '--color-accent',
-    'colors.background': '--color-background',
-    'typography.headingFont': '--font-heading',
+    'colors.primary':          '--color-primary',
+    'colors.accent':           '--color-accent',
+    'colors.background':       '--color-background',
+    'colors.headerBackground': '--color-header',
+    'colors.headerText':       '--color-header-text',
+    'typography.headingFont':  '--font-heading',
   };
 
   const vars: string[] = [];

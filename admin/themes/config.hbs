@@ -9,16 +9,23 @@
 {{#if saved}}
 <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Settings saved. Changes are live.</div>
 {{/if}}
+{{#if error}}
+<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{error}}</div>
+{{/if}}
 
 <div class="grid grid-cols-3 gap-6">
-  <div class="col-span-2">
+  <div class="col-span-2 space-y-5">
+
+    {{!-- Single form wrapping all non-image fields --}}
     <form method="POST" action="/admin/themes/{{theme.id}}/config">
 
       {{#each sections}}
+      {{#if (hasNonImageFields this.fields)}}
       <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4 mb-5">
         <h2 class="font-semibold capitalize">{{this.name}}</h2>
 
         {{#each this.fields}}
+        {{#unless (eq this.type 'image')}}
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{this.label}}</label>
 
@@ -52,11 +59,13 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
           {{/if}}
         </div>
+        {{/unless}}
         {{/each}}
       </div>
+      {{/if}}
       {{/each}}
 
-      <div class="flex gap-3">
+      <div class="flex gap-3 mb-5">
         <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
           Save changes
         </button>
@@ -65,6 +74,36 @@
         </a>
       </div>
     </form>
+
+    {{!-- Image fields: each gets its own multipart form --}}
+    {{#each sections}}
+    {{#each this.fields}}
+    {{#if (eq this.type 'image')}}
+    <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5">
+      <label class="block text-sm font-medium text-gray-700 mb-3">{{this.label}}</label>
+      {{#if this.value}}
+      <div class="flex items-start gap-4 mb-3">
+        <div class="w-40 h-24 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+          <img src="{{this.value}}" alt="{{this.label}}" class="max-h-full max-w-full object-contain">
+        </div>
+        <form method="POST" action="/admin/themes/{{../../theme.id}}/config/image/{{this.flatKey}}/remove">
+          <button type="submit" class="text-xs text-red-500 hover:underline">Remove</button>
+        </form>
+      </div>
+      {{/if}}
+      <form method="POST" action="/admin/themes/{{../../theme.id}}/config/image/{{this.flatKey}}" enctype="multipart/form-data">
+        <div class="flex gap-2 items-center">
+          <input type="file" name="file" accept="image/*" required
+            class="flex-1 text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+          <button type="submit" class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 whitespace-nowrap">Upload</button>
+        </div>
+        {{#if this.description}}<p class="text-xs text-gray-400 mt-1.5">{{this.description}}</p>{{/if}}
+      </form>
+    </div>
+    {{/if}}
+    {{/each}}
+    {{/each}}
+
   </div>
 
   <div class="space-y-4">

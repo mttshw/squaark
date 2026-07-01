@@ -36,6 +36,9 @@ hbs.registerHelper('date_short', (d: string) =>
 hbs.registerHelper('json_pretty', (v: unknown) =>
   new Handlebars.SafeString(`<pre>${JSON.stringify(v, null, 2)}</pre>`),
 );
+hbs.registerHelper('hasNonImageFields', (fields: Array<{ type: string }>) =>
+  Array.isArray(fields) && fields.some((f) => f.type !== 'image'),
+);
 hbs.registerHelper('status_badge', (status: string) => {
   const map: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',

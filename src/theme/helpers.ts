@@ -9,9 +9,11 @@ export function registerHelpers(
   resolveAsset: AssetResolver,
   resolveUrl: UrlResolver,
 ): void {
-  hbs.registerHelper('money', (m: Money | null | undefined) => {
+  hbs.registerHelper('money', function (this: unknown, m: Money | null | undefined, options: Handlebars.HelperOptions) {
     if (!m) return '';
-    return m.formatted;
+    const root = (options?.data?.root ?? {}) as { store?: { currency?: { symbol?: string } } };
+    const symbol = root.store?.currency?.symbol ?? '$';
+    return `${symbol}${(m.amount / 100).toFixed(2)}`;
   });
 
   hbs.registerHelper('asset', (filename: string) => resolveAsset(filename));
@@ -34,6 +36,8 @@ export function registerHelpers(
     return variant.available ? 'In Stock' : 'Sold Out';
   });
 
+  hbs.registerHelper('eq', (a: unknown, b: unknown) => a === b);
+  hbs.registerHelper('ne', (a: unknown, b: unknown) => a !== b);
   hbs.registerHelper('gt', (a: number, b: number) => a > b);
   hbs.registerHelper('lt', (a: number, b: number) => a < b);
   hbs.registerHelper('gte', (a: number, b: number) => a >= b);

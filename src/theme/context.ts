@@ -61,6 +61,7 @@ export interface GlobalContext {
     name: string;
     url: string;
     logo: string | null;
+    icon: string | null;
     currency: { code: string; symbol: string; position: 'before' | 'after' };
   };
   theme: {
@@ -166,7 +167,8 @@ export function buildGlobalContext(
     store: {
       name: settings.store_name ?? 'My Store',
       url: settings.store_url ?? 'http://localhost:3000',
-      logo: null,
+      logo: settings.store_logo || null,
+      icon: settings.store_icon || null,
       currency: {
         code: currencyCode,
         symbol: CURRENCY_SYMBOLS[currencyCode] ?? currencyCode,
