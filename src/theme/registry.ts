@@ -1,0 +1,79 @@
+import path from 'path';
+import { ThemeEngine } from './engine';
+import { loadManifest, resolveConfig, resolveConfigNested, buildCssVars, type ThemeManifest } from './config';
+import { findActiveTheme, type ThemeRow } from '../db/queries/themes';
+import type { FastifyInstance } from 'fastify';
+
+export class ThemeRegistry {
+  private engine: ThemeEngine | null = null;
+  private activeId: string | null = null;
+  private manifest: ThemeManifest | null = null;
+  private cssVars = '';
+  private nestedConfig: Record<string, Record<string, unknown>> = {};
+
+  async init(fastify: FastifyInstance): Promise<void> {
+    const theme = findActiveTheme();
+    if (!theme) throw new Error('No active theme found in database');
+    await this.load(theme);
+    this.engine!.registerAssetRoutes(fastify);
+  }
+
+  private async load(theme: ThemeRow): Promise<void> {
+    const themeDir = path.resolve(process.cwd(), theme.directory);
+    const engine = new ThemeEngine(themeDir);
+    await engine.init();
+
+    const manifest = loadManifest(themeDir);
+    const overrides = JSON.parse(theme.config_overrides || '{}') as Record<string, unknown>;
+    const resolved = resolveConfig(manifest, overrides);
+
+    this.engine = engine;
+    this.activeId = theme.id;
+    this.manifest = manifest;
+    this.cssVars = buildCssVars(resolved);
+    this.nestedConfig = resolveConfigNested(manifest, overrides);
+  }
+
+  /** Hot-swap to a new active theme. Call after activateTheme() in DB. */
+  async reload(fastify: FastifyInstance): Promise<void> {
+    const theme = findActiveTheme();
+    if (!theme) return;
+    if (theme.id === this.activeId) {
+      // Same theme, just refresh config vars + invalidate cache
+      const manifest = loadManifest(path.resolve(process.cwd(), theme.directory));
+      const overrides = JSON.parse(theme.config_overrides || '{}') as Record<string, unknown>;
+      const resolved = resolveConfig(manifest, overrides);
+      this.cssVars = buildCssVars(resolved);
+      this.nestedConfig = resolveConfigNested(manifest, overrides);
+      this.engine?.invalidateAll();
+      return;
+    }
+    // Different theme — full reinit
+    this.engine = null;
+    await this.load(theme);
+    this.engine!.registerAssetRoutes(fastify);
+  }
+
+  get currentEngine(): ThemeEngine {
+    if (!this.engine) throw new Error('ThemeRegistry not initialised');
+    return this.engine;
+  }
+
+  get currentManifest(): ThemeManifest | null {
+    return this.manifest;
+  }
+
+  get currentCssVars(): string {
+    return this.cssVars;
+  }
+
+  get currentThemeConfig(): Record<string, Record<string, unknown>> {
+    return this.nestedConfig;
+  }
+
+  get currentActiveId(): string | null {
+    return this.activeId;
+  }
+}
+
+export const themeRegistry = new ThemeRegistry();

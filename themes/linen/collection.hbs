@@ -1,0 +1,58 @@
+{{> header}}
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Collection header -->
+    <div class="mb-10">
+      {{#if collection.image}}
+        <div class="aspect-[3/1] rounded-2xl overflow-hidden bg-gray-100 mb-8">
+          <img src="{{collection.image.large}}" alt="{{collection.title}}" class="w-full h-full object-cover">
+        </div>
+      {{/if}}
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">{{collection.title}}</h1>
+          {{#if collection.description}}
+            <p class="text-gray-500 mt-2 max-w-xl">{{collection.description}}</p>
+          {{/if}}
+          <p class="text-sm text-gray-400 mt-1">{{collection.products.length}} products</p>
+        </div>
+
+        <!-- Sort -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-500 whitespace-nowrap">Sort by</label>
+          <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                  hx-get="/collections/{{collection.slug}}"
+                  hx-target="body"
+                  hx-push-url="true"
+                  name="sort">
+            {{#each collection.sort.options}}
+              <option value="{{this.value}}" {{#if_eq this.value ../collection.sort.current}}selected{{/if_eq}}>
+                {{this.label}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product grid -->
+    {{#if collection.products.length}}
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-{{theme.config.layout.productsPerRow}} gap-6 md:gap-8">
+        {{#each collection.products}}
+          {{> product-card}}
+        {{/each}}
+      </div>
+
+      {{> pagination pagination=collection.pagination}}
+
+    {{else}}
+      <div class="text-center py-24">
+        <p class="text-gray-400 text-lg mb-4">No products found.</p>
+        <a href="/collections/all" class="text-sm font-medium" style="color:var(--color-accent)">View all products →</a>
+      </div>
+    {{/if}}
+
+  </div>
+
+{{> footer}}

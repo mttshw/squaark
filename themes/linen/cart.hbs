@@ -1,0 +1,68 @@
+{{> header}}
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900 mb-10">Your Cart</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+      <!-- Cart items (htmx target) -->
+      <div class="lg:col-span-2">
+        {{> cart-contents}}
+      </div>
+
+      <!-- Order summary -->
+      <div class="lg:col-span-1">
+        <div class="bg-gray-50 rounded-2xl p-6 space-y-4 sticky top-24">
+          <h2 class="font-bold text-gray-900">Order Summary</h2>
+
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between text-gray-600">
+              <span>Subtotal ({{pluralize cart.itemCount "item" "items"}})</span>
+              <span>{{money cart.subtotal}}</span>
+            </div>
+            {{#if cart.discountAmount}}
+              <div class="flex justify-between text-green-600">
+                <span>Discount ({{cart.discountCode}})</span>
+                <span>–{{money cart.discountAmount}}</span>
+              </div>
+            {{/if}}
+            <div class="flex justify-between text-gray-600">
+              <span>Shipping</span>
+              <span class="text-gray-400">Calculated at checkout</span>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-200 pt-4 flex justify-between font-bold text-gray-900">
+            <span>Total</span>
+            <span>{{money cart.total}}</span>
+          </div>
+
+          <!-- Discount code (stub) -->
+          <div class="border-t border-gray-200 pt-4">
+            <form class="flex gap-2">
+              <input type="text" name="discount" placeholder="Discount code"
+                     class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300">
+              <button type="submit"
+                      class="px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                Apply
+              </button>
+            </form>
+          </div>
+
+          {{#unless cart.empty}}
+            <a href="{{cart.checkoutUrl}}"
+               class="block w-full text-center py-3 px-6 text-sm font-semibold text-white rounded-lg transition-all hover:opacity-90"
+               style="background:var(--color-accent)">
+              Proceed to Checkout
+            </a>
+          {{/unless}}
+
+          <a href="/collections/all" class="block text-center text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            ← Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{{> footer}}

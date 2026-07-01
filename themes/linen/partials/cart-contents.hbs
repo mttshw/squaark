@@ -1,0 +1,52 @@
+<div id="cart-contents">
+  {{#if cart.empty}}
+    <div class="text-center py-16 space-y-4">
+      <p class="text-gray-500">Your cart is empty.</p>
+      <a href="/collections/all"
+         class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-lg hover:opacity-90"
+         style="background:var(--color-primary)">
+        Continue Shopping
+      </a>
+    </div>
+  {{else}}
+    <div class="divide-y divide-gray-100">
+      {{#each cart.items}}
+        <div class="py-6 flex gap-4">
+          <a href="{{url 'product' this.productSlug}}" class="flex-shrink-0">
+            <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-50">
+              <img src="{{this.image.thumbnail}}" alt="{{this.productTitle}}" class="w-full h-full object-cover">
+            </div>
+          </a>
+          <div class="flex-1 min-w-0">
+            <a href="{{url 'product' this.productSlug}}"
+               class="font-medium text-sm text-gray-900 hover:text-accent leading-tight block mb-1">
+              {{this.productTitle}}
+            </a>
+            {{#unless (is this.variantTitle "Default")}}
+              <p class="text-xs text-gray-400 mb-2">{{this.variantTitle}}</p>
+            {{/unless}}
+            <p class="text-sm font-semibold text-gray-900">{{money this.lineTotal}}</p>
+          </div>
+          <div class="flex flex-col items-end gap-3">
+            <button hx-delete="/cart/remove/{{this.id}}"
+                    hx-target="#cart-contents"
+                    hx-swap="outerHTML"
+                    class="text-gray-300 hover:text-red-400 transition-colors" aria-label="Remove">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+            <input type="number" value="{{this.quantity}}" min="1"
+                   hx-post="/cart/update"
+                   hx-target="#cart-contents"
+                   hx-swap="outerHTML"
+                   hx-vals='{"itemId": "{{this.id}}"}'
+                   hx-trigger="change"
+                   name="quantity"
+                   class="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-gray-300">
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  {{/if}}
+</div>

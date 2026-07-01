@@ -1,0 +1,55 @@
+/* ── Casper Theme – Custom Properties & Overrides ── */
+/* Utility classes are provided by the Tailwind CDN (dev) or compiled CSS (prod). */
+/* Run `npm run css:build` to compile Tailwind for production. */
+
+:root {
+  --color-primary: #1A1A2E;
+  --color-accent: #E94560;
+  --color-background: #FFFFFF;
+  --font-heading: 'Inter', sans-serif;
+}
+
+/* htmx loading indicators */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator { display: inline-flex; }
+
+/* Smooth page transitions */
+body { opacity: 1; transition: opacity 0.15s ease; }
+
+/* Cart badge pulse on update */
+@keyframes badge-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.cart-count-updated { animation: badge-pop 0.3s ease; }
+
+/* Product image zoom */
+.product-image-wrap { overflow: hidden; }
+.product-image-wrap img { transition: transform 0.4s ease; }
+.product-image-wrap:hover img { transform: scale(1.04); }
+
+/* Sale badge */
+.badge-sale {
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+/* Pagination */
+.pagination { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; }
+.pagination a {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.pagination a:hover { background: var(--color-primary); color: #fff; }

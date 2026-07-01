@@ -1,0 +1,37 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Orders</h1>
+  <span class="text-sm text-gray-500">{{total}} total</span>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  {{#if orders.length}}
+  <table class="w-full text-sm">
+    <thead class="border-b border-gray-100 bg-gray-50">
+      <tr>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Order</th>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Customer</th>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Total</th>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Date</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {{#each orders}}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">
+          <a href="/admin/orders/{{this.id}}" class="hover:underline">#{{this.order_number}}</a>
+        </td>
+        <td class="px-4 py-3 text-gray-600">{{this.email}}</td>
+        <td class="px-4 py-3">{{{status_badge this.status}}}</td>
+        <td class="px-4 py-3">£{{money_pence this.total}}</td>
+        <td class="px-4 py-3 text-gray-500">{{date_short this.created_at}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <div class="px-4 py-16 text-center text-gray-400">
+    <p>No orders yet. Orders will appear here once customers complete checkout.</p>
+  </div>
+  {{/if}}
+</div>

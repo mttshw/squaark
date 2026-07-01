@@ -1,0 +1,30 @@
+{
+  "name": "linen",
+  "version": "1.0.0",
+  "engine": ">=1.0.0",
+  "description": "Clean, minimal ecommerce theme",
+  "author": "Core Team",
+
+  "config": {
+    "colors": {
+      "primary":    { "type": "color",   "default": "#1A1A2E", "label": "Primary" },
+      "accent":     { "type": "color",   "default": "#E94560", "label": "Accent" },
+      "background": { "type": "color",   "default": "#FFFFFF", "label": "Background" }
+    },
+    "typography": {
+      "headingFont": {
+        "type": "select",
+        "default": "Inter",
+        "options": ["Inter", "Playfair Display", "Space Grotesk"],
+        "label": "Heading font"
+      }
+    },
+    "layout": {
+      "productsPerRow":      { "type": "select",  "default": "3", "options": ["2", "3", "4"], "label": "Products per row" },
+      "showHero":            { "type": "boolean", "default": true,       "label": "Show homepage hero" },
+      "heroHeading":         { "type": "text",    "default": "Welcome",  "label": "Hero heading" },
+      "heroImage":           { "type": "image",   "default": "",         "label": "Hero image" },
+      "featuredCollection":  { "type": "text",    "default": "",         "label": "Featured collection slug" }
+    }
+  }
+}

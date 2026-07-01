@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {{meta_title}}
+  {{meta_description}}
+  {{canonical_url}}
+  <link rel="stylesheet" href="{{asset 'style.css'}}">
+  {{{cssVars}}}
+  <!-- Tailwind CDN for dev — replace with compiled CSS for production -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary)',
+            accent:  'var(--color-accent)',
+            background: 'var(--color-background)',
+          },
+          fontFamily: { heading: ['var(--font-heading)'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-white text-gray-900 font-[Inter,sans-serif] antialiased">
+
+<header class="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo / Store name -->
+      <a href="/" class="flex items-center gap-2 font-bold text-xl tracking-tight text-gray-900">
+        {{#if store.logo}}
+          <img src="{{store.logo}}" alt="{{store.name}}" class="h-8 w-auto">
+        {{else}}
+          <span class="text-primary">{{store.name}}</span>
+        {{/if}}
+      </a>
+
+      <!-- Main navigation -->
+      <nav class="hidden md:flex items-center gap-8">
+        {{#each navigation.main}}
+          <a href="{{this.url}}"
+             class="text-sm font-medium transition-colors {{#is this.url ../currentPath}}text-accent{{else}}text-gray-600 hover:text-gray-900{{/is}}">
+            {{this.label}}
+          </a>
+        {{/each}}
+      </nav>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-4">
+        <!-- Search -->
+        <a href="/search" class="text-gray-500 hover:text-gray-900 transition-colors" aria-label="Search">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+        </a>
+
+        <!-- Cart -->
+        <a href="/cart" class="relative text-gray-500 hover:text-gray-900 transition-colors" aria-label="Cart">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          <span id="cart-count"
+                class="cart-count absolute -top-2 -right-2 bg-accent text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none"
+                style="background:var(--color-accent)"
+                {{#if cart.itemCount}}{{else}}style="display:none"{{/if}}>
+            {{cart.itemCount}}
+          </span>
+        </a>
+
+        <!-- Mobile menu toggle -->
+        <button class="md:hidden text-gray-500 hover:text-gray-900" x-data @click="$dispatch('toggle-menu')">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile nav -->
+  <div class="md:hidden border-t border-gray-100" x-data="{ open: false }" @toggle-menu.window="open = !open" x-show="open" x-cloak>
+    <nav class="px-4 py-3 flex flex-col gap-3">
+      {{#each navigation.main}}
+        <a href="{{this.url}}" class="text-sm font-medium text-gray-700 hover:text-gray-900">{{this.label}}</a>
+      {{/each}}
+    </nav>
+  </div>
+</header>
+
+<main>

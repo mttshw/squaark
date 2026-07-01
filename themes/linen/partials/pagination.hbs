@@ -1,0 +1,29 @@
+{{#if pagination}}
+  {{#if (or pagination.hasPrev pagination.hasNext)}}
+    <nav class="pagination flex items-center justify-center gap-3 mt-12" aria-label="Pagination">
+      {{#if pagination.hasPrev}}
+        <a href="{{pagination.prevUrl}}"
+           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Previous
+        </a>
+      {{/if}}
+
+      <span class="text-sm text-gray-500">
+        Page {{pagination.currentPage}} of {{pagination.totalPages}}
+      </span>
+
+      {{#if pagination.hasNext}}
+        <a href="{{pagination.nextUrl}}"
+           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          Next
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      {{/if}}
+    </nav>
+  {{/if}}
+{{/if}}

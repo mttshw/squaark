@@ -1,0 +1,44 @@
+</main>
+
+<footer class="border-t border-gray-100 mt-24">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <!-- Brand -->
+      <div>
+        <p class="font-bold text-gray-900 mb-2">{{store.name}}</p>
+        <p class="text-sm text-gray-500">Curated goods for considered living.</p>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Info</p>
+        <ul class="space-y-2">
+          {{#each navigation.footer}}
+            <li>
+              <a href="{{this.url}}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                {{this.label}}
+              </a>
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <!-- Currency / locale (stub) -->
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Currency</p>
+        <p class="text-sm text-gray-600">{{store.currency.code}} ({{store.currency.symbol}})</p>
+      </div>
+
+    </div>
+
+    <div class="mt-8 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-xs text-gray-400">© {{store.name}}. All rights reserved.</p>
+      <p class="text-xs text-gray-400">Powered by Squaark</p>
+    </div>
+  </div>
+</footer>
+
+<script src="{{asset 'main.js'}}"></script>
+</body>
+</html>
