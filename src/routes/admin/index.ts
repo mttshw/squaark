@@ -8,6 +8,8 @@ import { collectionRoutes } from './collections';
 import { orderRoutes } from './orders';
 import { settingsRoutes } from './settings';
 import { themeRoutes } from './themes';
+import { emailRoutes } from './emails';
+import { importRoutes } from './import';
 import { countOrders } from '../../db/queries/orders';
 import { getAllSettings } from '../../db/queries/admin';
 
@@ -34,6 +36,8 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       await app.register(orderRoutes);
       await app.register(settingsRoutes);
       await app.register(themeRoutes);
+      await app.register(emailRoutes);
+      await app.register(importRoutes);
     },
     { prefix: '/admin' },
   );

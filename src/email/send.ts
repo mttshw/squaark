@@ -1,0 +1,39 @@
+import { getActiveTransport, getEmailSettings } from './transport';
+import { renderEmailTemplate, renderEmailPreview } from './templates';
+import { logEmailAttempt } from '../db/queries/email';
+
+/** Renders a stored template by key and sends it, logging the outcome either way. */
+export async function sendTemplatedEmail(
+  templateKey: string,
+  to: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  const settings = getEmailSettings();
+  const transport = getActiveTransport(settings);
+  const { subject, html } = renderEmailTemplate(templateKey, data);
+
+  try {
+    await transport.send({ to, from: settings.fromAddress, fromName: settings.fromName, subject, html });
+    logEmailAttempt({ templateKey, to, subject, provider: transport.id, status: 'sent' });
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    logEmailAttempt({ templateKey, to, subject, provider: transport.id, status: 'failed', error });
+    throw err;
+  }
+}
+
+/** Sends an ad-hoc subject/body (not a stored template) — used for the settings "send test" action. */
+export async function sendTestEmail(to: string, subject: string, body: string): Promise<void> {
+  const settings = getEmailSettings();
+  const transport = getActiveTransport(settings);
+  const { html } = renderEmailPreview(subject, body, { store: { name: settings.fromName } });
+
+  try {
+    await transport.send({ to, from: settings.fromAddress, fromName: settings.fromName, subject, html });
+    logEmailAttempt({ templateKey: null, to, subject, provider: transport.id, status: 'sent' });
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    logEmailAttempt({ templateKey: null, to, subject, provider: transport.id, status: 'failed', error });
+    throw err;
+  }
+}

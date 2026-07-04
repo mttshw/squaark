@@ -155,7 +155,7 @@ const DEFAULT_THEME_CONFIG: Record<string, Record<string, unknown>> = {
   },
 };
 
-const CURRENCY_SYMBOLS: Record<string, string> = { GBP: '£', USD: '$', EUR: '€' };
+export const CURRENCY_SYMBOLS: Record<string, string> = { GBP: '£', USD: '$', EUR: '€' };
 
 export function buildGlobalContext(
   currentPath: string,

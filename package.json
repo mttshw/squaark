@@ -21,15 +21,18 @@
     "adm-zip": "^0.5.17",
     "argon2": "^0.44.0",
     "better-sqlite3": "^9.6.0",
+    "fast-xml-parser": "^5.9.3",
     "fastify": "^4.28.0",
     "handlebars": "^4.7.8",
     "lru-cache": "^10.4.3",
+    "nodemailer": "^9.0.3",
     "sharp": "^0.35.2"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.8",
     "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20.14.0",
+    "@types/nodemailer": "^8.0.1",
     "@types/sharp": "^0.31.1",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.15.0",

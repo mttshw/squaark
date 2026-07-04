@@ -1,0 +1,72 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Emails</h1>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+  <table class="w-full text-sm">
+    <thead class="border-b border-gray-100 bg-gray-50">
+      <tr>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Email</th>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Subject</th>
+        <th class="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {{#each templates}}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">
+          <a href="/admin/emails/{{this.key}}" class="hover:underline">{{this.name}}</a>
+        </td>
+        <td class="px-4 py-3 text-gray-500">{{this.subject}}</td>
+        <td class="px-4 py-3">
+          {{#if (eq this.enabled 1)}}
+          <span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Enabled</span>
+          {{else}}
+          <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Disabled</span>
+          {{/if}}
+        </td>
+        <td class="px-4 py-3 text-right">
+          <a href="/admin/emails/{{this.key}}" class="text-gray-400 hover:text-gray-700 text-xs">Edit →</a>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 p-5">
+  <h2 class="font-semibold mb-3">Recent sends</h2>
+  {{#if log.length}}
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-gray-400 text-xs">
+        <th class="text-left py-1.5 font-medium">To</th>
+        <th class="text-left py-1.5 font-medium">Subject</th>
+        <th class="text-left py-1.5 font-medium">Provider</th>
+        <th class="text-left py-1.5 font-medium">Status</th>
+        <th class="text-left py-1.5 font-medium">When</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {{#each log}}
+      <tr>
+        <td class="py-1.5">{{this.to_address}}</td>
+        <td class="py-1.5 text-gray-500">{{this.subject}}</td>
+        <td class="py-1.5 text-gray-500">{{this.provider}}</td>
+        <td class="py-1.5">
+          {{#if (eq this.status 'sent')}}
+          <span class="text-green-600 text-xs font-medium">Sent</span>
+          {{else}}
+          <span class="text-red-600 text-xs font-medium" title="{{this.error}}">Failed</span>
+          {{/if}}
+        </td>
+        <td class="py-1.5 text-gray-400 text-xs">{{date_short this.created_at}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="text-gray-400 text-sm">No emails sent yet. Configure a provider in <a href="/admin/settings#email" class="underline">Settings</a> and send a test.</p>
+  {{/if}}
+</div>

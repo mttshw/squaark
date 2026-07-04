@@ -8,6 +8,7 @@ import fastifyMultipart from '@fastify/multipart';
 import path from 'path';
 import fs from 'fs';
 import config from './config';
+import { runMigrations } from './db/migrate';
 import { themeRegistry } from './theme/registry';
 import { storefrontRoutes } from './routes/storefront/index';
 import { adminRoutes } from './routes/admin/index';
@@ -43,6 +44,9 @@ async function build() {
     prefix: '/uploads/',
     decorateReply: false,
   });
+
+  // ── Database ───────────────────────────────────────────────────────────────
+  runMigrations();
 
   // ── Theme registry ─────────────────────────────────────────────────────────
   await themeRegistry.init(fastify);

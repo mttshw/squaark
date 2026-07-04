@@ -39,6 +39,18 @@ hbs.registerHelper('json_pretty', (v: unknown) =>
 hbs.registerHelper('hasNonImageFields', (fields: Array<{ type: string }>) =>
   Array.isArray(fields) && fields.some((f) => f.type !== 'image'),
 );
+hbs.registerHelper('percent', (processed: number, total: number) =>
+  total > 0 ? Math.min(100, Math.round((processed / total) * 100)) : 0,
+);
+hbs.registerHelper('parseJson', (json: string) => {
+  try { return JSON.parse(json); } catch { return []; }
+});
+hbs.registerHelper('jsonLength', (json: string) => {
+  try { return JSON.parse(json).length; } catch { return 0; }
+});
+hbs.registerHelper('jsonNonEmpty', (json: string) => {
+  try { return JSON.parse(json).length > 0; } catch { return false; }
+});
 hbs.registerHelper('status_badge', (status: string) => {
   const map: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
@@ -63,4 +75,11 @@ export function render(template: string, context: Record<string, unknown>): stri
 
   const layoutSrc = fs.readFileSync(path.join(ADMIN_VIEWS, 'partials', 'layout.hbs'), 'utf-8');
   return hbs.compile(layoutSrc)({ ...context, body: new Handlebars.SafeString(body) });
+}
+
+/** Renders a template without the admin layout — for htmx fragment responses (polling, inline swaps). */
+export function renderFragment(template: string, context: Record<string, unknown>): string {
+  const file = path.join(ADMIN_VIEWS, `${template}.hbs`);
+  const src = fs.readFileSync(file, 'utf-8');
+  return hbs.compile(src)(context);
 }

@@ -28,8 +28,7 @@ for config, advisory locks for queue-like jobs. No Redis, no
 Meilisearch, no separate search service at v1.
 
 **Fewer services = easier self-hosting.** The entire platform is one
-Node.js process and one SQLite database. That's it. A self-hoster runs
-two containers (or just node and pg on bare metal).
+Node.js process and one SQLite database. That's it. 
 
 **REST only.** No GraphQL. A clean, well-documented REST API. If
 headless users need GraphQL, that's a v2 conversation.
