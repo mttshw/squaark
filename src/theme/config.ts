@@ -2,10 +2,12 @@ import fs from 'fs';
 import path from 'path';
 
 export interface ConfigField {
-  type: 'color' | 'text' | 'select' | 'boolean' | 'image';
+  type: 'color' | 'text' | 'select' | 'boolean' | 'image' | 'repeater';
   label: string;
-  default: string | boolean;
+  default: string | boolean | Record<string, unknown>[];
   options?: string[];
+  /** Field definitions for one row — only present when type is 'repeater'. */
+  itemFields?: Record<string, ConfigField>;
 }
 
 export interface ThemeManifest {

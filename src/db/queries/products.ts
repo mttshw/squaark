@@ -88,17 +88,21 @@ const PRODUCT_SUMMARY_SQL = `
   LEFT JOIN avail ON avail.product_id = p.id
 `;
 
-export function findAllProducts(): ProductRow[] {
-  return query<ProductRow>(`${PRODUCT_SUMMARY_SQL} WHERE p.published = 1 ORDER BY p.created_at DESC`);
+export function findAllProducts(limit?: number): ProductRow[] {
+  const sql = `${PRODUCT_SUMMARY_SQL} WHERE p.published = 1 ORDER BY p.created_at DESC${limit ? ' LIMIT ?' : ''}`;
+  return limit ? query<ProductRow>(sql, [limit]) : query<ProductRow>(sql);
 }
 
-export function findProductsByCollection(collectionId: string): ProductRow[] {
-  return query<ProductRow>(`
+export function findProductsByCollection(collectionId: string, limit?: number): ProductRow[] {
+  const sql = `
     ${PRODUCT_SUMMARY_SQL}
     JOIN collection_products cp ON cp.product_id = p.id
     WHERE p.published = 1 AND cp.collection_id = ?
-    ORDER BY cp.position
-  `, [collectionId]);
+    ORDER BY cp.position${limit ? ' LIMIT ?' : ''}
+  `;
+  return limit
+    ? query<ProductRow>(sql, [collectionId, limit])
+    : query<ProductRow>(sql, [collectionId]);
 }
 
 export function findProductBySlug(slug: string): ProductRow | null {

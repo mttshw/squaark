@@ -79,22 +79,27 @@
 
   {{/if}}
 
-  <!-- Featured Products -->
+  <!-- Featured sections -->
+  {{#each featuredSections}}
+  {{#if this.products.length}}
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
     <div class="flex items-baseline justify-between mb-10">
-      <h2 class="text-2xl font-bold text-gray-900">Featured Products</h2>
-      <a href="/collections/all" class="text-sm font-medium transition-colors" style="color:var(--color-accent)">
+      <h2 class="text-2xl font-bold text-gray-900">{{this.title}}</h2>
+      <a href="{{#if this.collectionSlug}}/collections/{{this.collectionSlug}}{{else}}/collections/all{{/if}}"
+         class="text-sm font-medium transition-colors" style="color:var(--color-accent)">
         View all →
       </a>
     </div>
 
     <div class="grid gap-8"
-         style="grid-template-columns: repeat({{theme.config.layout.productsPerRow}}, minmax(0, 1fr))">
-      {{#each featuredProducts}}
+         style="grid-template-columns: repeat({{../theme.config.layout.productsPerRow}}, minmax(0, 1fr))">
+      {{#each this.products}}
         {{> product-card}}
       {{/each}}
     </div>
   </section>
+  {{/if}}
+  {{/each}}
 
   <!-- Value props -->
   <section class="border-t border-gray-100">

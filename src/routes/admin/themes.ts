@@ -7,7 +7,7 @@ import { getAllSettings } from '../../db/queries/admin';
 import {
   findAllThemes, findThemeById, activateTheme, saveConfigOverrides,
 } from '../../db/queries/themes';
-import { loadManifest, resolveConfig } from '../../theme/config';
+import { loadManifest, resolveConfig, type ConfigField, type ThemeManifest } from '../../theme/config';
 import { themeRegistry } from '../../theme/registry';
 import { installThemeFromZip } from '../../admin/themes';
 import { saveThemeImage } from '../../admin/store-media';
@@ -60,6 +60,82 @@ const CSS_VAR_MAP: Record<string, string> = {
   'typography.headingFont':  '--font-heading',
 };
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Rebuilds a repeater field's rows from bracket-indexed form fields, e.g. "layout.featuredSections[0][title]". */
+function parseRepeaterRows(
+  body: Record<string, string>,
+  flatKey: string,
+  itemFields: Record<string, ConfigField>,
+): Record<string, unknown>[] {
+  const pattern = new RegExp(`^${escapeRegExp(flatKey)}\\[(\\d+)\\]\\[([^\\]]+)\\]$`);
+  const rowsByIndex = new Map<number, Record<string, unknown>>();
+  for (const [bodyKey, val] of Object.entries(body)) {
+    const match = bodyKey.match(pattern);
+    if (!match) continue;
+    const [, indexStr, itemKey] = match;
+    if (!(itemKey in itemFields)) continue;
+    const row = rowsByIndex.get(Number(indexStr)) ?? {};
+    row[itemKey] = val;
+    rowsByIndex.set(Number(indexStr), row);
+  }
+  return [...rowsByIndex.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([, row]) => {
+      const complete: Record<string, unknown> = {};
+      for (const [key, field] of Object.entries(itemFields)) {
+        complete[key] = row[key] ?? field.default;
+      }
+      return complete;
+    });
+}
+
+/** Merges submitted form fields into `overrides` in place, following the manifest's field types. */
+function applyOverridesFromBody(
+  manifest: ThemeManifest,
+  body: Record<string, string>,
+  overrides: Record<string, unknown>,
+): void {
+  for (const [section, fields] of Object.entries(manifest.config ?? {})) {
+    for (const [key, field] of Object.entries(fields)) {
+      if (field.type === 'image') continue; // images are managed via their own upload endpoints
+      const flat = `${section}.${key}`;
+      if (field.type === 'repeater') {
+        overrides[flat] = parseRepeaterRows(body, flat, field.itemFields ?? {});
+        continue;
+      }
+      const val = body[flat];
+      if (val !== undefined) {
+        overrides[flat] = field.type === 'boolean' ? val === 'true' : val;
+      } else if (field.type === 'boolean') {
+        overrides[flat] = false;
+      }
+    }
+  }
+}
+
+/** Builds the row/cell view-model a repeater field needs to render in the customiser. */
+function buildRepeaterView(flatKey: string, field: ConfigField, value: unknown) {
+  const rowsData = Array.isArray(value) ? value : [];
+  const itemFields = field.itemFields ?? {};
+  const containerId = `repeater-${flatKey.replace(/\./g, '-')}`;
+  const rows = rowsData.map((rowValue, index) => ({
+    cells: Object.entries(itemFields).map(([itemKey, itemField]) => ({
+      type: itemField.type,
+      label: itemField.label,
+      options: itemField.options,
+      value: (rowValue as Record<string, unknown>)?.[itemKey] ?? itemField.default,
+      name: `${flatKey}[${index}][${itemKey}]`,
+    })),
+  }));
+  const itemFieldsForJs = Object.fromEntries(
+    Object.entries(itemFields).map(([itemKey, f]) => [itemKey, { type: f.type, label: f.label, options: f.options, default: f.default }]),
+  );
+  return { containerId, rows, nextIndex: rowsData.length, itemFieldsJson: JSON.stringify(itemFieldsForJs) };
+}
+
 async function configPage(
   req: FastifyRequest<{ Params: { id: string }; Querystring: { saved?: string; error?: string } }>,
   reply: FastifyReply,
@@ -77,14 +153,19 @@ async function configPage(
 
   const sections = Object.entries(manifest.config ?? {}).map(([sectionName, fields]) => ({
     name: sectionName,
-    fields: Object.entries(fields).map(([key, field]) => ({
-      ...field,
-      key,
-      flatKey: `${sectionName}.${key}`,
-      value: resolved[`${sectionName}.${key}`] ?? field.default,
-      cssVar: CSS_VAR_MAP[`${sectionName}.${key}`] ?? null,
-      cssVarIsFont: (CSS_VAR_MAP[`${sectionName}.${key}`] ?? '').startsWith('--font-'),
-    })),
+    fields: Object.entries(fields).map(([key, field]) => {
+      const flatKey = `${sectionName}.${key}`;
+      const value = resolved[flatKey] ?? field.default;
+      const base = {
+        ...field,
+        key,
+        flatKey,
+        value,
+        cssVar: CSS_VAR_MAP[flatKey] ?? null,
+        cssVarIsFont: (CSS_VAR_MAP[flatKey] ?? '').startsWith('--font-'),
+      };
+      return field.type === 'repeater' ? { ...base, ...buildRepeaterView(flatKey, field, value) } : base;
+    }),
   }));
 
   return reply.type('text/html').send(
@@ -113,18 +194,7 @@ async function configSave(
 
   // Start from existing overrides so image uploads are preserved
   const overrides = JSON.parse(theme.config_overrides || '{}') as Record<string, unknown>;
-  for (const [section, fields] of Object.entries(manifest.config ?? {})) {
-    for (const [key, field] of Object.entries(fields)) {
-      if (field.type === 'image') continue; // images are managed via their own upload endpoints
-      const flat = `${section}.${key}`;
-      const val = req.body[flat];
-      if (val !== undefined) {
-        overrides[flat] = field.type === 'boolean' ? val === 'true' : val;
-      } else if (field.type === 'boolean') {
-        overrides[flat] = false;
-      }
-    }
-  }
+  applyOverridesFromBody(manifest, req.body, overrides);
 
   saveConfigOverrides(theme.id, overrides);
 
@@ -146,18 +216,7 @@ async function previewApply(
   const manifest = loadManifest(themeDir);
 
   const overrides = JSON.parse(theme.config_overrides || '{}') as Record<string, unknown>;
-  for (const [section, fields] of Object.entries(manifest.config ?? {})) {
-    for (const [key, field] of Object.entries(fields)) {
-      if (field.type === 'image') continue;
-      const flat = `${section}.${key}`;
-      const val = req.body[flat];
-      if (val !== undefined) {
-        overrides[flat] = field.type === 'boolean' ? val === 'true' : val;
-      } else if (field.type === 'boolean') {
-        overrides[flat] = false;
-      }
-    }
-  }
+  applyOverridesFromBody(manifest, req.body, overrides);
 
   themeRegistry.applyPreview(overrides);
   return reply.code(204).send();

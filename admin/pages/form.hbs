@@ -1,0 +1,66 @@
+<div class="flex items-center justify-between mb-6">
+  <div class="flex items-center gap-3">
+    <a href="/admin/pages" class="text-gray-400 hover:text-gray-600 text-sm">← Pages</a>
+    <h1 class="text-2xl font-bold">{{#if page}}{{page.title}}{{else}}New page{{/if}}</h1>
+  </div>
+  {{#if page}}
+  <form method="POST" action="/admin/pages/{{page.id}}/delete" onsubmit="return confirm('Delete this page?')">
+    <button type="submit" class="text-red-500 text-sm hover:underline">Delete</button>
+  </form>
+  {{/if}}
+</div>
+
+{{#if error}}<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{error}}</div>{{/if}}
+{{#if saved}}<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Saved.</div>{{/if}}
+{{#if created}}<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Page created.</div>{{/if}}
+
+<div class="grid grid-cols-3 gap-6">
+  <div class="col-span-2 space-y-5">
+    <form method="POST" action="/admin/pages/{{#if page}}{{page.id}}{{else}}new{{/if}}">
+      <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <h2 class="font-semibold">Details</h2>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
+          <input type="text" name="title" value="{{page.title}}" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Slug <span class="text-red-500">*</span></label>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-400 text-sm">/pages/</span>
+            <input type="text" name="slug" value="{{page.slug}}" required
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+          <textarea name="excerpt" rows="2"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">{{page.excerpt}}</textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Content <span class="text-gray-400 font-normal">(HTML)</span></label>
+          <textarea name="content" rows="14"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">{{page.content}}</textarea>
+        </div>
+      </div>
+      <div class="mt-5 flex items-center gap-4">
+        <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+          {{#if page}}Save changes{{else}}Create page{{/if}}
+        </button>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" name="status" value="published" {{#if (eq page.status 'published')}}checked{{/if}} class="rounded">
+          Published
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <div class="space-y-4">
+    {{#if page}}
+    <div class="bg-white rounded-xl border border-gray-200 p-4 text-xs text-gray-400 space-y-1">
+      <p>Created {{date_short page.created_at}}</p>
+      <p>Updated {{date_short page.updated_at}}</p>
+    </div>
+    {{/if}}
+  </div>
+</div>

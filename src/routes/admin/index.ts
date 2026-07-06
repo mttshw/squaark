@@ -5,6 +5,7 @@ import { render } from '../../admin/render';
 import { authRoutes } from './auth';
 import { productRoutes } from './products';
 import { collectionRoutes } from './collections';
+import { pageRoutes } from './pages';
 import { orderRoutes } from './orders';
 import { settingsRoutes } from './settings';
 import { themeRoutes } from './themes';
@@ -33,6 +34,7 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       app.get('/', dashboardHandler);
       await app.register(productRoutes);
       await app.register(collectionRoutes);
+      await app.register(pageRoutes);
       await app.register(orderRoutes);
       await app.register(settingsRoutes);
       await app.register(themeRoutes);

@@ -3,7 +3,7 @@ import {
   findAllCollections,
   type CollectionRow,
 } from '../db/queries/collections';
-import { listCollectionProducts } from './products';
+import { listCollectionProducts, listProducts } from './products';
 import type { ProductSummary } from '../theme/context';
 
 export interface Collection {
@@ -56,4 +56,12 @@ export async function getCollectionPage(slug: string, sortBy = 'featured'): Prom
 
 export async function listCollections(): Promise<Collection[]> {
   return findAllCollections().map(rowToCollection);
+}
+
+/** Products for a homepage featured section — all products when collectionSlug is blank. */
+export async function listFeaturedProducts(collectionSlug: string, limit: number): Promise<ProductSummary[]> {
+  if (!collectionSlug) return listProducts(limit);
+  const row = findCollectionBySlug(collectionSlug);
+  if (!row) return [];
+  return listCollectionProducts(row.id, limit);
 }

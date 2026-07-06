@@ -58,12 +58,12 @@ export function rowToProductSummary(row: ProductRow): ProductSummary {
   };
 }
 
-export async function listProducts(): Promise<ProductSummary[]> {
-  return findAllProducts().map(rowToProductSummary);
+export async function listProducts(limit?: number): Promise<ProductSummary[]> {
+  return findAllProducts(limit).map(rowToProductSummary);
 }
 
-export async function listCollectionProducts(collectionId: string): Promise<ProductSummary[]> {
-  return findProductsByCollection(collectionId).map(rowToProductSummary);
+export async function listCollectionProducts(collectionId: string, limit?: number): Promise<ProductSummary[]> {
+  return findProductsByCollection(collectionId, limit).map(rowToProductSummary);
 }
 
 export interface FullProduct {

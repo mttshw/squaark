@@ -151,7 +151,7 @@ const DEFAULT_THEME_CONFIG: Record<string, Record<string, unknown>> = {
     showHero: true,
     heroHeading: 'Welcome to our store',
     heroImage: '',
-    featuredCollection: '',
+    featuredSections: [{ title: 'Featured Products', collection: '', count: '8' }],
   },
 };
 

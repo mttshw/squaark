@@ -32,7 +32,16 @@
       "heroImageFit":        { "type": "select",  "default": "cover",      "options": ["cover", "contain"],                     "label": "Image fit" },
       "heroImagePadding":    { "type": "select",  "default": "0px",        "options": ["0px", "0.75rem", "1.5rem", "3rem"],     "label": "Image padding" },
       "heroPosition":        { "type": "select",  "default": "background", "options": ["background", "center", "left", "right"], "label": "Image position" },
-      "featuredCollection":  { "type": "text",    "default": "",                            "label": "Featured collection slug" }
+      "featuredSections": {
+        "type": "repeater",
+        "default": [ { "title": "Featured Products", "collection": "", "count": "8" } ],
+        "label": "Featured sections",
+        "itemFields": {
+          "title":      { "type": "text",   "default": "Featured Products", "label": "Section title" },
+          "collection": { "type": "text",   "default": "",                  "label": "Collection slug (blank = all products)" },
+          "count":      { "type": "select", "default": "8", "options": ["4", "6", "8", "12", "16"], "label": "Number of products" }
+        }
+      }
     }
   }
 }

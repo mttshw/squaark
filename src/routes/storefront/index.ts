@@ -1,9 +1,10 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ThemeRegistry } from '../../theme/registry';
 import { buildGlobalContext } from '../../theme/context';
-import { listProducts, getProduct } from '../../commerce/products';
-import { getCollectionPage } from '../../commerce/collections';
+import { getProduct } from '../../commerce/products';
+import { getCollectionPage, listFeaturedProducts } from '../../commerce/collections';
 import { getCartSummary, getCartPage, addToCart, updateCartItem, removeFromCart } from '../../commerce/cart';
+import { findPageBySlug } from '../../db/queries/pages';
 
 async function base(
   req: FastifyRequest,
@@ -48,12 +49,24 @@ async function cartFragment(
 export async function storefrontRoutes(fastify: FastifyInstance, registry: ThemeRegistry): Promise<void> {
 
   fastify.get('/', async (req, reply) => {
-    const [ctx, products] = await Promise.all([base(req, reply, '/', registry), listProducts()]);
+    const ctx = await base(req, reply, '/', registry);
     const layout = ctx.theme.config.layout ?? {};
+    const sectionsConfig = Array.isArray(layout.featuredSections)
+      ? layout.featuredSections as Array<{ title?: string; collection?: string; count?: string }>
+      : [];
+    const featuredSections = await Promise.all(sectionsConfig.map(async (section) => {
+      const collectionSlug = (section.collection ?? '').trim();
+      const count = parseInt(section.count ?? '', 10) || 8;
+      return {
+        title: section.title?.trim() || 'Featured Products',
+        collectionSlug,
+        products: await listFeaturedProducts(collectionSlug, count),
+      };
+    }));
     await render(registry, reply, 'index', {
       ...ctx,
       pageTitle: ctx.store.name,
-      featuredProducts: products,
+      featuredSections,
       showHero: layout.showHero ?? true,
       heroEyebrow: layout.heroEyebrow ?? 'New Collection',
       heroHeading: layout.heroHeading ?? 'Welcome to our store',
@@ -106,12 +119,14 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
 
   fastify.get('/pages/:slug', async (req, reply) => {
     const { slug } = req.params as { slug: string };
-    const title = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     const ctx = await base(req, reply, `/pages/${slug}`, registry);
-    await render(registry, reply, 'page', {
-      ...ctx, pageTitle: title,
-      page: { title, content: '<p>This page is coming soon.</p>', slug },
-    });
+    const page = findPageBySlug(slug);
+    if (!page) {
+      return reply.code(404).type('text/html').send(
+        await registry.currentEngine.render('404', { ...ctx, pageTitle: 'Page Not Found' }),
+      );
+    }
+    await render(registry, reply, 'page', { ...ctx, pageTitle: page.title, page });
   });
 
   // ── Cart operations ────────────────────────────────────────────────────────
