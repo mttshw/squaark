@@ -34,6 +34,15 @@ export class ThemeRegistry {
     this.nestedConfig = resolveConfigNested(manifest, overrides);
   }
 
+  /** Apply overrides to the in-memory registry without writing to DB — used by the live preview. */
+  applyPreview(overrides: Record<string, unknown>): void {
+    if (!this.manifest) return;
+    const resolved = resolveConfig(this.manifest, overrides);
+    this.cssVars = buildCssVars(resolved);
+    this.nestedConfig = resolveConfigNested(this.manifest, overrides);
+    this.engine?.invalidateAll();
+  }
+
   /** Hot-swap to a new active theme. Call after activateTheme() in DB. */
   async reload(fastify: FastifyInstance): Promise<void> {
     const theme = findActiveTheme();

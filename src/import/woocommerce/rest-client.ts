@@ -1,4 +1,4 @@
-import type { NormalizedProduct, NormalizedOrder, NormalizedVariation, NormalizedOrderItem } from './types';
+import type { NormalizedProduct, NormalizedOrder, NormalizedVariation, NormalizedOrderItem, NormalizedPage } from './types';
 
 export interface WooRestConfig {
   storeUrl: string;
@@ -41,17 +41,29 @@ const STATUS_MAP: Record<string, string> = {
   cancelled: 'cancelled', failed: 'cancelled', trash: 'cancelled',
 };
 
+interface WpPageJson {
+  id: number;
+  slug: string;
+  status: string;
+  title: { rendered: string };
+  content: { rendered: string };
+  excerpt: { rendered: string };
+}
+
 export class WooRestClient {
   private base: string;
+  private wpBase: string;
   private authHeader: string;
 
   constructor(config: WooRestConfig) {
-    this.base = config.storeUrl.replace(/\/+$/, '') + '/wp-json/wc/v3';
+    const root = config.storeUrl.replace(/\/+$/, '');
+    this.base = root + '/wp-json/wc/v3';
+    this.wpBase = root + '/wp-json/wp/v2';
     this.authHeader = 'Basic ' + Buffer.from(`${config.consumerKey}:${config.consumerSecret}`).toString('base64');
   }
 
-  private async getPage<T>(path: string, page: number): Promise<{ items: T[]; totalPages: number }> {
-    const url = `${this.base}${path}${path.includes('?') ? '&' : '?'}per_page=100&page=${page}`;
+  private async getPage<T>(path: string, page: number, base = this.base): Promise<{ items: T[]; totalPages: number }> {
+    const url = `${base}${path}${path.includes('?') ? '&' : '?'}per_page=100&page=${page}`;
     const res = await fetch(url, { headers: { Authorization: this.authHeader } });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
@@ -68,8 +80,8 @@ export class WooRestClient {
   }
 
   /** Cheap count (per_page=1) used to size a progress bar before the real fetch loop starts. */
-  async count(path: string): Promise<number> {
-    const url = `${this.base}${path}${path.includes('?') ? '&' : '?'}per_page=1&page=1`;
+  async count(path: string, base = this.base): Promise<number> {
+    const url = `${base}${path}${path.includes('?') ? '&' : '?'}per_page=1&page=1`;
     const res = await fetch(url, { headers: { Authorization: this.authHeader } });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
@@ -137,6 +149,34 @@ export class WooRestClient {
       options,
       image: v.image ? { url: v.image.src, alt: v.image.alt || '' } : null,
     };
+  }
+
+  async countPages(): Promise<number> {
+    try { return await this.count('/pages', this.wpBase); } catch { return 0; }
+  }
+
+  async *fetchPages(): AsyncGenerator<NormalizedPage> {
+    let page = 1;
+    while (true) {
+      let result: { items: WpPageJson[]; totalPages: number };
+      try {
+        result = await this.getPage<WpPageJson>('/pages', page, this.wpBase);
+      } catch {
+        return; // WP core API may not be accessible with WC keys — skip silently
+      }
+      for (const p of result.items) {
+        yield {
+          wcId: p.id,
+          title: p.title.rendered,
+          slug: p.slug,
+          content: p.content.rendered,
+          excerpt: p.excerpt.rendered,
+          status: p.status === 'publish' ? 'published' : 'draft',
+        };
+      }
+      if (page >= result.totalPages) break;
+      page++;
+    }
   }
 
   async *fetchOrders(): AsyncGenerator<NormalizedOrder> {

@@ -55,8 +55,9 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
       pageTitle: ctx.store.name,
       featuredProducts: products,
       showHero: layout.showHero ?? true,
-      heroHeading: layout.heroHeading ?? 'Welcome',
-      heroSubheading: 'Curated goods for considered living.',
+      heroEyebrow: layout.heroEyebrow ?? 'New Collection',
+      heroHeading: layout.heroHeading ?? 'Welcome to our store',
+      heroSubheading: layout.heroSubheading ?? 'Curated goods for considered living.',
     });
   });
 

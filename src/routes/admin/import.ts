@@ -46,6 +46,7 @@ async function connectApi(
       consumer_secret?: string;
       import_products?: string;
       import_orders?: string;
+      import_pages?: string;
     };
   }>,
   reply: FastifyReply,
@@ -60,6 +61,7 @@ async function connectApi(
     {
       importProducts: req.body.import_products === 'on',
       importOrders: req.body.import_orders === 'on',
+      importPages: req.body.import_pages === 'on',
     },
   );
   return reply.redirect(`/admin/import?job=${jobId}`);

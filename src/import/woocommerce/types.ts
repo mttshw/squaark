@@ -37,6 +37,15 @@ export interface NormalizedProduct {
   variations: NormalizedVariation[];
 }
 
+export interface NormalizedPage {
+  wcId: number;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  status: 'published' | 'draft';
+}
+
 export interface NormalizedOrderItem {
   productTitle: string;
   variantTitle: string;

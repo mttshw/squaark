@@ -61,6 +61,7 @@ export function buildCssVars(resolved: Record<string, unknown>): string {
     'colors.background':       '--color-background',
     'colors.headerBackground': '--color-header',
     'colors.headerText':       '--color-header-text',
+    'colors.heroBackground':   '--color-hero',
     'typography.headingFont':  '--font-heading',
   };
 

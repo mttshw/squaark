@@ -1,117 +1,233 @@
-<div class="flex items-center gap-3 mb-6">
-  <a href="/admin/themes" class="text-gray-400 hover:text-gray-600 text-sm">← Themes</a>
-  <h1 class="text-2xl font-bold">{{theme.name}} — Customise</h1>
-  {{#if (eq theme.active 1)}}
-  <span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
-  {{/if}}
-</div>
+<div style="display:flex;height:100%;overflow:hidden;">
 
-{{#if saved}}
-<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Settings saved. Changes are live.</div>
-{{/if}}
-{{#if error}}
-<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{error}}</div>
-{{/if}}
+  <!-- ── Config panel (left) ─────────────────────────────────────────────── -->
+  <div style="width:400px;flex-shrink:0;overflow-y:auto;border-right:1px solid #e5e7eb;background:#fff;display:flex;flex-direction:column;">
 
-<div class="grid grid-cols-3 gap-6">
-  <div class="col-span-2 space-y-5">
+    <!-- Header -->
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:#fff;z-index:10;">
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+        <a href="/admin/themes" style="color:#9ca3af;font-size:0.75rem;text-decoration:none;">← Themes</a>
+        <span style="font-weight:600;font-size:0.9rem;">{{theme.name}}</span>
+        {{#if (eq theme.active 1)}}
+        <span style="background:#dcfce7;color:#166534;font-size:0.65rem;font-weight:600;padding:0.15rem 0.4rem;border-radius:0.25rem;">Active</span>
+        {{/if}}
+      </div>
+      {{#if saved}}
+      <div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:0.375rem;font-size:0.75rem;color:#166534;">
+        Saved — preview updated.
+      </div>
+      {{/if}}
+      {{#if error}}
+      <div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:#fef2f2;border:1px solid #fecaca;border-radius:0.375rem;font-size:0.75rem;color:#991b1b;">
+        {{error}}
+      </div>
+      {{/if}}
+    </div>
 
-    {{!-- Single form wrapping all non-image fields --}}
-    <form method="POST" action="/admin/themes/{{theme.id}}/config">
+    {{!-- Ghost form element — non-image inputs associate with it via form="config-form" --}}
+    <form id="config-form" method="POST" action="/admin/themes/{{theme.id}}/config" style="display:none;"></form>
 
+    {{!-- All fields rendered in manifest order --}}
+    <div id="config-fields" style="padding:1rem 1.25rem;">
       {{#each sections}}
-      {{#if (hasNonImageFields this.fields)}}
-      <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4 mb-5">
-        <h2 class="font-semibold capitalize">{{this.name}}</h2>
+      <div style="margin-bottom:1.5rem;">
+        <p style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:0.75rem;">{{this.name}}</p>
 
         {{#each this.fields}}
-        {{#unless (eq this.type 'image')}}
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{this.label}}</label>
+
+        {{!-- IMAGE field: own multipart form, inline in section --}}
+        {{#if (eq this.type 'image')}}
+        <div style="margin-bottom:0.875rem;padding:0.75rem;background:#f9fafb;border:1px solid #e5e7eb;border-radius:0.5rem;">
+          <p style="font-size:0.78rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">{{this.label}}</p>
+          {{#if this.value}}
+          <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.5rem;">
+            <div style="height:64px;background:#fff;border:1px solid #e5e7eb;border-radius:0.375rem;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:0.25rem;min-width:80px;">
+              <img src="{{this.value}}" alt="" style="max-height:100%;max-width:100%;object-fit:contain;">
+            </div>
+            <form method="POST" action="/admin/themes/{{../../theme.id}}/config/image/{{this.flatKey}}/remove" style="display:inline;">
+              <button type="submit" style="font-size:0.7rem;color:#ef4444;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Remove</button>
+            </form>
+          </div>
+          {{/if}}
+          <form method="POST" action="/admin/themes/{{../../theme.id}}/config/image/{{this.flatKey}}" enctype="multipart/form-data"
+                style="display:flex;gap:0.5rem;align-items:center;">
+            <input type="file" name="file" accept="image/*" required
+              style="flex:1;font-size:0.72rem;color:#6b7280;min-width:0;">
+            <button type="submit"
+              style="background:#111827;color:#fff;padding:0.3rem 0.65rem;border-radius:0.375rem;font-size:0.72rem;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+              Upload
+            </button>
+          </form>
+        </div>
+
+        {{!-- NON-IMAGE fields: associated with #config-form via HTML5 form attribute --}}
+        {{else}}
+        <div style="margin-bottom:0.875rem;">
+          <label style="display:block;font-size:0.8rem;font-weight:500;color:#374151;margin-bottom:0.3rem;">{{this.label}}</label>
 
           {{#if (eq this.type 'color')}}
-          <div class="flex items-center gap-3">
-            <input type="color" name="{{this.flatKey}}" value="{{this.value}}" id="color-{{this.flatKey}}"
-              class="h-9 w-16 rounded border border-gray-300 cursor-pointer p-0.5"
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <input type="color" form="config-form" name="{{this.flatKey}}" value="{{this.value}}"
+              id="color-{{this.flatKey}}"
+              {{#if this.cssVar}}data-css-var="{{this.cssVar}}"{{/if}}
+              style="height:2.25rem;width:3.5rem;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;padding:0.1rem;"
               oninput="document.getElementById('text-{{this.flatKey}}').value=this.value">
             <input type="text" id="text-{{this.flatKey}}" value="{{this.value}}"
-              class="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+              style="width:6rem;padding:0.375rem 0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.8rem;font-family:monospace;"
               oninput="document.getElementById('color-{{this.flatKey}}').value=this.value">
           </div>
 
           {{else if (eq this.type 'select')}}
-          <select name="{{this.flatKey}}"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          <select form="config-form" name="{{this.flatKey}}"
+            {{#if this.cssVar}}data-css-var="{{this.cssVar}}"{{#if this.cssVarIsFont}} data-css-var-type="font"{{/if}}{{/if}}
+            style="width:100%;padding:0.375rem 0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.8rem;">
             {{#each this.options}}
             <option value="{{this}}" {{#if (eq this ../value)}}selected{{/if}}>{{this}}</option>
             {{/each}}
           </select>
 
           {{else if (eq this.type 'boolean')}}
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="{{this.flatKey}}" value="true"
-              {{#if this.value}}checked{{/if}} class="rounded">
-            <span class="text-sm text-gray-600">Enabled</span>
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" form="config-form" name="{{this.flatKey}}" value="true"
+              {{#if this.value}}checked{{/if}}>
+            <span style="font-size:0.8rem;color:#6b7280;">Enabled</span>
           </label>
 
           {{else}}
-          <input type="text" name="{{this.flatKey}}" value="{{this.value}}"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          <input type="text" form="config-form" name="{{this.flatKey}}" value="{{this.value}}"
+            style="width:100%;padding:0.375rem 0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.8rem;box-sizing:border-box;">
           {{/if}}
         </div>
-        {{/unless}}
+        {{/if}}
+
         {{/each}}
       </div>
-      {{/if}}
       {{/each}}
 
-      <div class="flex gap-3 mb-5">
-        <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-          Save changes
-        </button>
-        <a href="/" target="_blank" class="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg text-sm font-medium hover:border-gray-400">
-          Preview store ↗
-        </a>
-      </div>
-    </form>
-
-    {{!-- Image fields: each gets its own multipart form --}}
-    {{#each sections}}
-    {{#each this.fields}}
-    {{#if (eq this.type 'image')}}
-    <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5">
-      <label class="block text-sm font-medium text-gray-700 mb-3">{{this.label}}</label>
-      {{#if this.value}}
-      <div class="flex items-start gap-4 mb-3">
-        <div class="w-40 h-24 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-          <img src="{{this.value}}" alt="{{this.label}}" class="max-h-full max-w-full object-contain">
-        </div>
-        <form method="POST" action="/admin/themes/{{../../theme.id}}/config/image/{{this.flatKey}}/remove">
-          <button type="submit" class="text-xs text-red-500 hover:underline">Remove</button>
-        </form>
-      </div>
-      {{/if}}
-      <form method="POST" action="/admin/themes/{{../../theme.id}}/config/image/{{this.flatKey}}" enctype="multipart/form-data">
-        <div class="flex gap-2 items-center">
-          <input type="file" name="file" accept="image/*" required
-            class="flex-1 text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-          <button type="submit" class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 whitespace-nowrap">Upload</button>
-        </div>
-        {{#if this.description}}<p class="text-xs text-gray-400 mt-1.5">{{this.description}}</p>{{/if}}
-      </form>
+      <button type="submit" form="config-form"
+        style="width:100%;background:#111827;color:#fff;padding:0.5rem 1rem;border-radius:0.5rem;font-size:0.85rem;font-weight:500;border:none;cursor:pointer;margin-bottom:0.5rem;"
+        onmouseover="this.style.background='#374151'" onmouseout="this.style.background='#111827'">
+        Save changes
+      </button>
     </div>
-    {{/if}}
-    {{/each}}
-    {{/each}}
 
-  </div>
-
-  <div class="space-y-4">
-    <div class="bg-white rounded-xl border border-gray-200 p-4 text-xs text-gray-400 space-y-1">
-      <p class="font-medium text-gray-600 mb-2">Theme info</p>
-      <p>Version: {{theme.version}}</p>
-      <p>Author: {{theme.author}}</p>
-      <p>Directory: {{theme.directory}}</p>
+    <!-- Theme info -->
+    <div style="padding:0.75rem 1.25rem;margin-top:auto;border-top:1px solid #f3f4f6;font-size:0.7rem;color:#9ca3af;line-height:1.6;">
+      v{{theme.version}} · {{theme.author}}
     </div>
   </div>
+
+  <!-- ── Preview panel (right) ───────────────────────────────────────────── -->
+  <div style="flex:1;display:flex;flex-direction:column;background:#e5e7eb;overflow:hidden;">
+
+    <!-- Preview toolbar -->
+    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:0.8rem;">
+      <span style="color:#6b7280;font-weight:500;">Preview</span>
+      <select id="preview-url-select"
+        style="padding:0.25rem 0.5rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.75rem;background:#fff;"
+        onchange="navigatePreview(this.value)">
+        <option value="/">Homepage</option>
+        <option value="/collections/all">All products</option>
+        <option value="/cart">Cart</option>
+      </select>
+      <button onclick="document.getElementById('squaark-preview').src = document.getElementById('squaark-preview').src"
+        style="background:none;border:1px solid #d1d5db;border-radius:0.375rem;padding:0.25rem 0.6rem;font-size:0.75rem;cursor:pointer;color:#374151;"
+        title="Reload preview">↺ Reload</button>
+      <a href="/" target="_blank"
+        style="margin-left:auto;color:#6b7280;font-size:0.75rem;text-decoration:none;"
+        title="Open in new tab">Open ↗</a>
+    </div>
+
+    <!-- iframe -->
+    <iframe id="squaark-preview" src="/"
+      style="flex:1;border:none;background:#fff;"
+      onload="onPreviewLoad()">
+    </iframe>
+  </div>
+
 </div>
+
+<script>
+  var previewReady = false;
+  var debounceTimer = null;
+  var pendingReload = false;
+  var THEME_ID = '{{theme.id}}';
+
+  // ── iframe lifecycle ────────────────────────────────────────────────────────
+
+  function onPreviewLoad() {
+    previewReady = true;
+    injectCssVars(); // re-apply current colours after every reload
+    if (pendingReload) { pendingReload = false; }
+  }
+
+  function navigatePreview(url) {
+    var iframe = document.getElementById('squaark-preview');
+    previewReady = false;
+    iframe.src = url;
+  }
+
+  function reloadPreviewIframe() {
+    var iframe = document.getElementById('squaark-preview');
+    var doc = iframe.contentDocument;
+    var currentUrl = doc && doc.location ? doc.location.href : '/';
+    previewReady = false;
+    iframe.src = currentUrl;
+  }
+
+  // ── CSS-var live injection (instant, no round-trip) ─────────────────────────
+
+  function injectCssVars() {
+    var iframe = document.getElementById('squaark-preview');
+    var doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+    if (!doc || !doc.head) return;
+    var parts = [];
+    document.querySelectorAll('[data-css-var]').forEach(function(el) {
+      var isFont = el.dataset.cssVarType === 'font';
+      parts.push(el.dataset.cssVar + ':' + (isFont ? "'" + el.value + "',sans-serif" : el.value));
+    });
+    var s = doc.getElementById('_sq_vars');
+    if (!s) { s = doc.createElement('style'); s.id = '_sq_vars'; doc.head.appendChild(s); }
+    s.textContent = ':root{' + parts.join(';') + '}';
+  }
+
+  // ── Debounced preview-apply (all fields → server re-render) ─────────────────
+
+  function schedulePreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyPreview, 400);
+  }
+
+  function applyPreview() {
+    // Browsers include all associated controls (form="config-form") when constructing FormData
+    var form = document.getElementById('config-form');
+    var body = new URLSearchParams(new FormData(form));
+    fetch('/admin/themes/' + THEME_ID + '/preview-apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body
+    }).then(function() {
+      reloadPreviewIframe();
+    });
+  }
+
+  // ── Wire up all inputs ──────────────────────────────────────────────────────
+
+  // Listen on the container — inputs use form="config-form" so events bubble here
+  document.getElementById('config-fields').addEventListener('input', function(e) {
+    var el = e.target;
+    // Instant CSS injection for colour/font fields
+    if (el.dataset && el.dataset.cssVar) injectCssVars();
+    // Debounced full render for everything
+    schedulePreview();
+  });
+
+  // Sync hex text input → colour picker (typing a valid hex updates the swatch)
+  document.querySelectorAll('[data-css-var][type="color"]').forEach(function(colorEl) {
+    var textEl = document.getElementById('text-' + colorEl.name);
+    if (!textEl) return;
+    textEl.addEventListener('input', function() {
+      if (/^#[0-9a-fA-F]{6}$/.test(textEl.value)) colorEl.value = textEl.value;
+    });
+  });
+</script>

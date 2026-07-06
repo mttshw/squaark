@@ -6,7 +6,7 @@ import {
 } from '../../db/queries/import';
 import { parseWxr } from './wxr';
 import { WooRestClient, type WooRestConfig } from './rest-client';
-import { upsertProduct, upsertOrder } from './mapper';
+import { upsertProduct, upsertOrder, upsertPage } from './mapper';
 
 export function startWxrImportJob(xml: string): string {
   const jobId = createImportJob('wxr');
@@ -18,12 +18,12 @@ export function startWxrImportJob(xml: string): string {
 
 async function runWxrImport(jobId: string, xml: string): Promise<void> {
   updateImportJobProgress(jobId, 'Reading export file...', 0, 0);
-  const { products, warnings } = parseWxr(xml);
+  const { products, pages, warnings } = parseWxr(xml);
   for (const w of warnings) appendImportJobError(jobId, 'file', w);
 
-  const total = products.length;
+  const total = products.length + pages.length;
   let processed = 0;
-  updateImportJobProgress(jobId, `Importing ${total} products...`, total, processed);
+  updateImportJobProgress(jobId, `Importing ${products.length} products, ${pages.length} pages...`, total, processed);
 
   for (const product of products) {
     try {
@@ -35,12 +35,23 @@ async function runWxrImport(jobId: string, xml: string): Promise<void> {
     updateImportJobProgress(jobId, `Importing products... (${processed}/${total})`, total, processed);
   }
 
-  finishImportJob(jobId, 'completed', `Imported ${processed} product${processed === 1 ? '' : 's'}.`);
+  for (const page of pages) {
+    try {
+      upsertPage(page);
+    } catch (err) {
+      appendImportJobError(jobId, page.title || `page #${page.wcId}`, err instanceof Error ? err.message : String(err));
+    }
+    processed++;
+    updateImportJobProgress(jobId, `Importing pages... (${processed}/${total})`, total, processed);
+  }
+
+  finishImportJob(jobId, 'completed', `Imported ${products.length} product${products.length === 1 ? '' : 's'} and ${pages.length} page${pages.length === 1 ? '' : 's'}.`);
 }
 
 export interface ApiImportOptions {
   importProducts: boolean;
   importOrders: boolean;
+  importPages: boolean;
 }
 
 export function startApiImportJob(config: WooRestConfig, options: ApiImportOptions): string {
@@ -59,10 +70,12 @@ async function runApiImport(jobId: string, config: WooRestConfig, options: ApiIm
 
   let productTotal = 0;
   let orderTotal = 0;
+  let pageTotal = 0;
   if (options.importProducts) productTotal = await client.count('/products');
   if (options.importOrders) orderTotal = await client.count('/orders');
+  if (options.importPages) pageTotal = await client.countPages();
 
-  const total = productTotal + orderTotal;
+  const total = productTotal + orderTotal + pageTotal;
   let processed = 0;
   updateImportJobProgress(jobId, 'Starting import...', total, processed);
 
@@ -87,6 +100,18 @@ async function runApiImport(jobId: string, config: WooRestConfig, options: ApiIm
       }
       processed++;
       updateImportJobProgress(jobId, `Importing orders... (${processed}/${total})`, total, processed);
+    }
+  }
+
+  if (options.importPages) {
+    for await (const page of client.fetchPages()) {
+      try {
+        upsertPage(page);
+      } catch (err) {
+        appendImportJobError(jobId, page.title || `page #${page.wcId}`, err instanceof Error ? err.message : String(err));
+      }
+      processed++;
+      updateImportJobProgress(jobId, `Importing pages... (${processed}/${total})`, total, processed);
     }
   }
 

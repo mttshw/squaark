@@ -17,6 +17,7 @@ export async function themeRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post<{ Params: { id: string } }>('/themes/:id/activate', (req, reply) => activateHandler(fastify, req, reply));
   fastify.get('/themes/:id/config', configPage);
   fastify.post<{ Params: { id: string }; Body: Record<string, string> }>('/themes/:id/config', (req, reply) => configSave(fastify, req, reply));
+  fastify.post<{ Params: { id: string }; Body: Record<string, string> }>('/themes/:id/preview-apply', previewApply);
   fastify.post<{ Params: { id: string; field: string } }>('/themes/:id/config/image/:field', (req, reply) => uploadThemeImage(fastify, req, reply));
   fastify.post<{ Params: { id: string; field: string } }>('/themes/:id/config/image/:field/remove', (req, reply) => removeThemeImage(fastify, req, reply));
   fastify.post('/themes/upload', uploadTheme);
@@ -48,8 +49,19 @@ async function activateHandler(
   return reply.redirect('/admin/themes?activated=1');
 }
 
+// Maps flat config keys to CSS custom property names — used by the live preview
+const CSS_VAR_MAP: Record<string, string> = {
+  'colors.primary':          '--color-primary',
+  'colors.accent':           '--color-accent',
+  'colors.background':       '--color-background',
+  'colors.headerBackground': '--color-header',
+  'colors.headerText':       '--color-header-text',
+  'colors.heroBackground':   '--color-hero',
+  'typography.headingFont':  '--font-heading',
+};
+
 async function configPage(
-  req: FastifyRequest<{ Params: { id: string } }>,
+  req: FastifyRequest<{ Params: { id: string }; Querystring: { saved?: string; error?: string } }>,
   reply: FastifyReply,
 ) {
   const theme = findThemeById(req.params.id);
@@ -60,6 +72,9 @@ async function configPage(
   const overrides = JSON.parse(theme.config_overrides || '{}') as Record<string, unknown>;
   const resolved = resolveConfig(manifest, overrides);
 
+  // Reset any unsaved preview state back to persisted DB config when opening the editor
+  if (theme.active === 1) themeRegistry.applyPreview(overrides);
+
   const sections = Object.entries(manifest.config ?? {}).map(([sectionName, fields]) => ({
     name: sectionName,
     fields: Object.entries(fields).map(([key, field]) => ({
@@ -67,6 +82,8 @@ async function configPage(
       key,
       flatKey: `${sectionName}.${key}`,
       value: resolved[`${sectionName}.${key}`] ?? field.default,
+      cssVar: CSS_VAR_MAP[`${sectionName}.${key}`] ?? null,
+      cssVarIsFont: (CSS_VAR_MAP[`${sectionName}.${key}`] ?? '').startsWith('--font-'),
     })),
   }));
 
@@ -74,8 +91,11 @@ async function configPage(
     render('themes/config', {
       ...adminCtx(req),
       theme, manifest, resolved, sections,
+      saved: 'saved' in (req.query as Record<string, string>),
+      error: (req.query as Record<string, string>).error ?? null,
       pageTitle: `${theme.name} — Customise`,
       pageSection: 'themes',
+      fullWidth: true,
     }),
   );
 }
@@ -112,6 +132,35 @@ async function configSave(
   if (theme.active === 1) await themeRegistry.reload(fastify);
 
   return reply.redirect(`/admin/themes/${theme.id}/config?saved=1`);
+}
+
+/** Applies config to the in-memory registry without persisting — powers the live preview. */
+async function previewApply(
+  req: FastifyRequest<{ Params: { id: string }; Body: Record<string, string> }>,
+  reply: FastifyReply,
+) {
+  const theme = findThemeById(req.params.id);
+  if (!theme || theme.active !== 1) return reply.code(204).send();
+
+  const themeDir = path.resolve(process.cwd(), theme.directory);
+  const manifest = loadManifest(themeDir);
+
+  const overrides = JSON.parse(theme.config_overrides || '{}') as Record<string, unknown>;
+  for (const [section, fields] of Object.entries(manifest.config ?? {})) {
+    for (const [key, field] of Object.entries(fields)) {
+      if (field.type === 'image') continue;
+      const flat = `${section}.${key}`;
+      const val = req.body[flat];
+      if (val !== undefined) {
+        overrides[flat] = field.type === 'boolean' ? val === 'true' : val;
+      } else if (field.type === 'boolean') {
+        overrides[flat] = false;
+      }
+    }
+  }
+
+  themeRegistry.applyPreview(overrides);
+  return reply.code(204).send();
 }
 
 async function uploadThemeImage(

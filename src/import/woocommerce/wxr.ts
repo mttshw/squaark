@@ -1,5 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
-import type { NormalizedProduct, NormalizedVariation, NormalizedCategory, NormalizedImage } from './types';
+import type { NormalizedProduct, NormalizedVariation, NormalizedCategory, NormalizedImage, NormalizedPage } from './types';
 
 const ARRAY_TAGS = new Set(['item', 'category', 'wp:postmeta']);
 
@@ -63,6 +63,7 @@ function optionsFromAttributeMeta(item: WxrItem): Record<string, string> {
 
 export interface WxrParseResult {
   products: NormalizedProduct[];
+  pages: NormalizedPage[];
   warnings: string[];
 }
 
@@ -86,6 +87,24 @@ export function parseWxr(xml: string): WxrParseResult {
       list.push(item);
       variationsByParent.set(item['wp:post_parent'], list);
     }
+  }
+
+  const pages: NormalizedPage[] = [];
+
+  for (const item of items) {
+    if (item['wp:post_type'] !== 'page') continue;
+    const status = item['wp:status'];
+    if (status === 'trash') continue;
+    const wcId = parseInt(item['wp:post_id'] ?? '', 10);
+    if (!wcId) continue;
+    pages.push({
+      wcId,
+      title: text(item.title),
+      slug: item['wp:post_name'] || `page-${wcId}`,
+      content: item['content:encoded'] ?? '',
+      excerpt: text((item as Record<string, unknown>)['excerpt:encoded']),
+      status: status === 'publish' ? 'published' : 'draft',
+    });
   }
 
   const products: NormalizedProduct[] = [];
@@ -160,9 +179,9 @@ export function parseWxr(xml: string): WxrParseResult {
     });
   }
 
-  if (products.length === 0) {
-    warnings.push('No WooCommerce products found in this export file.');
+  if (products.length === 0 && pages.length === 0) {
+    warnings.push('No WooCommerce products or pages found in this export file.');
   }
 
-  return { products, warnings };
+  return { products, pages, warnings };
 }

@@ -1,6 +1,6 @@
 import { execute, queryOne } from '../../db/connection';
 import { importRemoteImage } from './image-fetch';
-import type { NormalizedProduct, NormalizedCategory, NormalizedOrder } from './types';
+import type { NormalizedProduct, NormalizedCategory, NormalizedOrder, NormalizedPage } from './types';
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -121,6 +121,33 @@ export async function upsertProduct(product: NormalizedProduct): Promise<{ id: s
   }
 
   return { id: productId, created };
+}
+
+/** Upserts a page (matched by wc_id). Slug is made unique on conflict by appending the wc_id. */
+export function upsertPage(page: NormalizedPage): { id: string; created: boolean } {
+  const existing = queryOne<{ id: string }>('SELECT id FROM pages WHERE wc_id = ?', [page.wcId]);
+
+  if (existing) {
+    execute(
+      `UPDATE pages SET title=?, slug=?, content=?, excerpt=?, status=?, updated_at=datetime('now') WHERE id=?`,
+      [page.title, page.slug, page.content, page.excerpt, page.status, existing.id],
+    );
+    return { id: existing.id, created: false };
+  }
+
+  const id = crypto.randomUUID();
+  try {
+    execute(
+      `INSERT INTO pages (id, title, slug, content, excerpt, status, wc_id) VALUES (?,?,?,?,?,?,?)`,
+      [id, page.title, page.slug, page.content, page.excerpt, page.status, page.wcId],
+    );
+  } catch {
+    execute(
+      `INSERT INTO pages (id, title, slug, content, excerpt, status, wc_id) VALUES (?,?,?,?,?,?,?)`,
+      [id, page.title, `${page.slug}-${page.wcId}`, page.content, page.excerpt, page.status, page.wcId],
+    );
+  }
+  return { id, created: true };
 }
 
 function resolveOrderNumber(preferred: number): number {

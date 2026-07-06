@@ -11,7 +11,8 @@
       "accent":           { "type": "color", "default": "#E94560", "label": "Accent (links / badges)" },
       "background":       { "type": "color", "default": "#FFFFFF", "label": "Page background" },
       "headerBackground": { "type": "color", "default": "#FFFFFF", "label": "Header background" },
-      "headerText":       { "type": "color", "default": "#111827", "label": "Header link colour" }
+      "headerText":       { "type": "color", "default": "#111827", "label": "Header link colour" },
+      "heroBackground":   { "type": "color", "default": "#1A1A2E", "label": "Hero background" }
     },
     "typography": {
       "headingFont": {
@@ -23,11 +24,15 @@
     },
     "layout": {
       "productsPerRow":      { "type": "select",  "default": "3", "options": ["2", "3", "4"], "label": "Products per row" },
-      "showHero":            { "type": "boolean", "default": true,       "label": "Show homepage hero" },
-      "heroHeading":         { "type": "text",    "default": "Welcome",  "label": "Hero heading" },
-      "heroImage":           { "type": "image",   "default": "",         "label": "Hero image" },
-      "heroPosition":        { "type": "select",  "default": "background", "options": ["background", "center", "left", "right"], "label": "Hero image position" },
-      "featuredCollection":  { "type": "text",    "default": "",         "label": "Featured collection slug" }
+      "showHero":            { "type": "boolean", "default": true,                          "label": "Show homepage hero" },
+      "heroEyebrow":         { "type": "text",    "default": "New Collection",              "label": "Hero eyebrow text" },
+      "heroHeading":         { "type": "text",    "default": "Welcome to our store",        "label": "Hero heading" },
+      "heroSubheading":      { "type": "text",    "default": "Curated goods for considered living.", "label": "Hero subheading" },
+      "heroImage":           { "type": "image",   "default": "",                            "label": "Hero image" },
+      "heroImageFit":        { "type": "select",  "default": "cover",      "options": ["cover", "contain"],                     "label": "Image fit" },
+      "heroImagePadding":    { "type": "select",  "default": "0px",        "options": ["0px", "0.75rem", "1.5rem", "3rem"],     "label": "Image padding" },
+      "heroPosition":        { "type": "select",  "default": "background", "options": ["background", "center", "left", "right"], "label": "Image position" },
+      "featuredCollection":  { "type": "text",    "default": "",                            "label": "Featured collection slug" }
     }
   }
 }
