@@ -185,9 +185,9 @@ export function buildGlobalContext(
         { label: 'Cart', url: '/cart', active: currentPath === '/cart', children: [] },
       ],
       footer: [
-        { label: 'About', url: '/pages/about', active: false, children: [] },
-        { label: 'Contact', url: '/pages/contact', active: false, children: [] },
-        { label: 'Privacy', url: '/pages/privacy', active: false, children: [] },
+        { label: 'About', url: '/about', active: false, children: [] },
+        { label: 'Contact', url: '/contact', active: false, children: [] },
+        { label: 'Privacy', url: '/privacy', active: false, children: [] },
       ],
     },
     currentPath,

@@ -1,0 +1,12 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="flex flex-col {{#if (eq imagePosition 'right')}}md:flex-row-reverse{{else}}md:flex-row{{/if}} gap-10 items-center">
+    {{#if src}}
+    <div class="flex-1">
+      <img src="{{src}}" alt="{{alt}}" class="w-full rounded-xl object-cover">
+    </div>
+    {{/if}}
+    <div class="flex-1 leading-relaxed text-gray-600">
+      {{{content}}}
+    </div>
+  </div>
+</div>

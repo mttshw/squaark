@@ -4,10 +4,19 @@ import { render } from '../../admin/render';
 import { getAdminById } from '../../admin/auth';
 import { getAllSettings } from '../../db/queries/admin';
 import { execute, query, queryOne } from '../../db/connection';
+import { savePageImage } from '../../admin/store-media';
 
 interface PageRow {
-  id: string; title: string; slug: string; content: string; excerpt: string;
-  status: string; created_at: string; updated_at: string;
+  id: string; title: string; slug: string; content: string; sections: string;
+  excerpt: string; status: string; created_at: string; updated_at: string;
+}
+
+// Top-level paths reserved by the storefront router
+const RESERVED_SLUGS = new Set(['cart', 'search', 'products', 'collections', 'account', 'checkout']);
+
+function isReservedSlug(slug: string): boolean {
+  const topSegment = slug.split('/')[0];
+  return RESERVED_SLUGS.has(topSegment);
 }
 
 export async function pageRoutes(fastify: FastifyInstance): Promise<void> {
@@ -17,6 +26,7 @@ export async function pageRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get('/pages/:id', editPagePage);
   fastify.post('/pages/:id', updatePage);
   fastify.post('/pages/:id/delete', deletePage);
+  fastify.post<{ Params: { id: string } }>('/pages/:id/sections/image', (req, reply) => uploadSectionImage(req, reply));
 }
 
 function adminCtx(req: FastifyRequest) {
@@ -24,6 +34,14 @@ function adminCtx(req: FastifyRequest) {
     admin: getAdminById(req.session.adminId!)!,
     settings: getAllSettings(),
   };
+}
+
+function parseSections(raw: string | undefined): unknown[] {
+  try { return JSON.parse(raw || '[]') ?? []; } catch { return []; }
+}
+
+function safeSectionsAttr(sections: unknown[]): string {
+  return JSON.stringify(sections).replace(/'/g, '&#39;');
 }
 
 async function listPages(req: FastifyRequest, reply: FastifyReply) {
@@ -35,16 +53,26 @@ async function listPages(req: FastifyRequest, reply: FastifyReply) {
 
 async function newPagePage(req: FastifyRequest, reply: FastifyReply) {
   return reply.type('text/html').send(
-    render('pages/form', { ...adminCtx(req), page: null, pageTitle: 'New page', pageSection: 'pages' }),
+    render('pages/form', {
+      ...adminCtx(req), page: null,
+      sectionsSafe: '[]',
+      pageTitle: 'New page', pageSection: 'pages',
+    }),
   );
 }
 
 async function editPagePage(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
   const page = queryOne<PageRow>('SELECT * FROM pages WHERE id = ?', [req.params.id]);
   if (!page) return reply.code(404).type('text/html').send(render('404', { pageTitle: 'Not found' }));
-
+  const sections = parseSections(page.sections);
   return reply.type('text/html').send(
-    render('pages/form', { ...adminCtx(req), page, pageTitle: page.title, pageSection: 'pages' }),
+    render('pages/form', {
+      ...adminCtx(req), page,
+      sectionsSafe: safeSectionsAttr(sections),
+      saved: 'saved' in (req.query as Record<string, string>),
+      created: 'created' in (req.query as Record<string, string>),
+      pageTitle: page.title, pageSection: 'pages',
+    }),
   );
 }
 
@@ -52,17 +80,26 @@ async function createPage(
   req: FastifyRequest<{ Body: Record<string, string> }>,
   reply: FastifyReply,
 ) {
-  const { title, slug, content, excerpt, status } = req.body;
-  if (!title || !slug) {
+  const { title, slug, content, excerpt, status, sections } = req.body;
+  const slugTrimmed = slug?.trim();
+  const validationError = !title || !slugTrimmed
+    ? 'Title and slug are required'
+    : isReservedSlug(slugTrimmed)
+      ? `"${slugTrimmed.split('/')[0]}" is a reserved path and cannot be used as a slug`
+      : null;
+  if (validationError) {
     return reply.type('text/html').send(
-      render('pages/form', { ...adminCtx(req), page: req.body,
-        error: 'Title and slug are required', pageTitle: 'New page', pageSection: 'pages' }),
+      render('pages/form', {
+        ...adminCtx(req), page: req.body, sectionsSafe: safeSectionsAttr(parseSections(sections)),
+        error: validationError, pageTitle: 'New page', pageSection: 'pages',
+      }),
     );
   }
+  const sectionsJson = (() => { try { JSON.parse(sections); return sections; } catch { return '[]'; } })();
   const id = crypto.randomUUID();
   execute(
-    'INSERT INTO pages (id, title, slug, content, excerpt, status) VALUES (?,?,?,?,?,?)',
-    [id, title.trim(), slug.trim(), content || '', excerpt || '', status === 'published' ? 'published' : 'draft'],
+    'INSERT INTO pages (id, title, slug, content, sections, excerpt, status) VALUES (?,?,?,?,?,?,?)',
+    [id, title.trim(), slugTrimmed, content || '', sectionsJson || '[]', excerpt || '', status === 'published' ? 'published' : 'draft'],
   );
   return reply.redirect(`/admin/pages/${id}?created=1`);
 }
@@ -71,10 +108,23 @@ async function updatePage(
   req: FastifyRequest<{ Params: { id: string }; Body: Record<string, string> }>,
   reply: FastifyReply,
 ) {
-  const { title, slug, content, excerpt, status } = req.body;
+  const { title, slug, content, excerpt, status, sections } = req.body;
+  const slugTrimmed = slug?.trim();
+  if (isReservedSlug(slugTrimmed)) {
+    const page = queryOne<PageRow>('SELECT * FROM pages WHERE id = ?', [req.params.id]);
+    return reply.type('text/html').send(
+      render('pages/form', {
+        ...adminCtx(req), page: { ...page, ...req.body },
+        sectionsSafe: safeSectionsAttr(parseSections(sections)),
+        error: `"${slugTrimmed.split('/')[0]}" is a reserved path and cannot be used as a slug`,
+        pageTitle: title, pageSection: 'pages',
+      }),
+    );
+  }
+  const sectionsJson = (() => { try { JSON.parse(sections); return sections; } catch { return '[]'; } })();
   execute(
-    `UPDATE pages SET title=?, slug=?, content=?, excerpt=?, status=?, updated_at=datetime('now') WHERE id=?`,
-    [title, slug, content || '', excerpt || '', status === 'published' ? 'published' : 'draft', req.params.id],
+    `UPDATE pages SET title=?, slug=?, content=?, sections=?, excerpt=?, status=?, updated_at=datetime('now') WHERE id=?`,
+    [title, slugTrimmed, content || '', sectionsJson || '[]', excerpt || '', status === 'published' ? 'published' : 'draft', req.params.id],
   );
   return reply.redirect(`/admin/pages/${req.params.id}?saved=1`);
 }
@@ -82,4 +132,22 @@ async function updatePage(
 async function deletePage(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
   execute('DELETE FROM pages WHERE id = ?', [req.params.id]);
   return reply.redirect('/admin/pages?deleted=1');
+}
+
+async function uploadSectionImage(
+  req: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+) {
+  const page = queryOne<PageRow>('SELECT id FROM pages WHERE id = ?', [req.params.id]);
+  if (!page) return reply.code(404).send({ error: 'Page not found' });
+  const data = await req.file();
+  if (!data) return reply.code(400).send({ error: 'No file uploaded' });
+  try {
+    const buf = await data.toBuffer();
+    const url = await savePageImage(req.params.id, buf, data.mimetype);
+    return reply.send({ url });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Upload failed';
+    return reply.code(400).send({ error: msg });
+  }
 }

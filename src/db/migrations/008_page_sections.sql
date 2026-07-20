@@ -1,0 +1,1 @@
+ALTER TABLE pages ADD COLUMN sections TEXT NOT NULL DEFAULT '[]';

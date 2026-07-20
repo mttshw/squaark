@@ -112,6 +112,17 @@ export function registerHelpers(
 
   hbs.registerHelper('structured_data', () => new Handlebars.SafeString(''));
 
+  hbs.registerHelper('renderSection', function(section: Record<string, unknown>) {
+    const type = String(section.type ?? '');
+    if (!type) return '';
+    const partialName = `sections/${type}`;
+    const partials = (hbs as unknown as { partials: Record<string, HandlebarsTemplateDelegate | string> }).partials;
+    const partial = partials[partialName];
+    if (!partial) return '';
+    const fn = typeof partial === 'string' ? hbs.compile(partial) : partial as HandlebarsTemplateDelegate;
+    return new hbs.SafeString(fn(section));
+  });
+
   hbs.registerHelper('pagination', (pagination: {
     hasPrev: boolean; prevUrl: string | null;
     hasNext: boolean; nextUrl: string | null;

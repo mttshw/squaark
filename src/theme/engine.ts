@@ -56,7 +56,7 @@ export class ThemeEngine {
       case 'collection': return `/collections/${slugs[0] ?? ''}`;
       case 'cart':       return '/cart';
       case 'search':     return '/search';
-      case 'page':       return `/pages/${slugs[0] ?? ''}`;
+      case 'page':       return `/${slugs[0] ?? ''}`;
       default:           return '/';
     }
   }

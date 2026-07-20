@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import config from '../config';
 
 const STORE_MEDIA_DIR = path.join(config.uploadsDir, 'store');
@@ -36,6 +37,20 @@ export async function saveStoreMedia(
   const filename = `${slot}${ext}`;
   fs.writeFileSync(path.join(STORE_MEDIA_DIR, filename), buffer);
   return `/uploads/store/${filename}`;
+}
+
+export async function savePageImage(
+  pageId: string,
+  buffer: Buffer,
+  mimetype: string,
+): Promise<string> {
+  const ext = ALLOWED_MIME[mimetype];
+  if (!ext) throw new Error(`Unsupported file type: ${mimetype}`);
+  const dir = path.join(config.uploadsDir, 'pages', pageId);
+  fs.mkdirSync(dir, { recursive: true });
+  const filename = `${crypto.randomUUID()}${ext}`;
+  fs.writeFileSync(path.join(dir, filename), buffer);
+  return `/uploads/pages/${pageId}/${filename}`;
 }
 
 export async function saveThemeImage(

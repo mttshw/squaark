@@ -117,16 +117,22 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
     await render(registry, reply, 'search', { ...ctx, pageTitle: 'Search', query: q, products: [] });
   });
 
-  fastify.get('/pages/:slug', async (req, reply) => {
-    const { slug } = req.params as { slug: string };
-    const ctx = await base(req, reply, `/pages/${slug}`, registry);
+  // Catch-all page lookup — registered last so all specific routes take priority
+  fastify.get('/*', async (req, reply) => {
+    const slug = (req.params as { '*': string })['*'];
+    const ctx = await base(req, reply, `/${slug}`, registry);
     const page = findPageBySlug(slug);
     if (!page) {
       return reply.code(404).type('text/html').send(
         await registry.currentEngine.render('404', { ...ctx, pageTitle: 'Page Not Found' }),
       );
     }
-    await render(registry, reply, 'page', { ...ctx, pageTitle: page.title, page });
+    let sections: unknown[] = [];
+    try { sections = JSON.parse((page as unknown as { sections: string }).sections || '[]'); } catch { /* fallback */ }
+    await render(registry, reply, 'page', {
+      ...ctx, pageTitle: page.title,
+      page: { ...page, sections },
+    });
   });
 
   // ── Cart operations ────────────────────────────────────────────────────────
