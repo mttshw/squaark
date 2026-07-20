@@ -5,6 +5,7 @@ import { getProduct } from '../../commerce/products';
 import { getCollectionPage, listFeaturedProducts } from '../../commerce/collections';
 import { getCartSummary, getCartPage, addToCart, updateCartItem, removeFromCart } from '../../commerce/cart';
 import { findPageBySlug } from '../../db/queries/pages';
+import { getAllSettings } from '../../db/queries/admin';
 
 async function base(
   req: FastifyRequest,
@@ -47,6 +48,8 @@ async function cartFragment(
 }
 
 export async function storefrontRoutes(fastify: FastifyInstance, registry: ThemeRegistry): Promise<void> {
+  // Read once at startup — changing cart_slug requires a server restart
+  const cartSlug = getAllSettings().cart_slug || 'cart';
 
   fastify.get('/', async (req, reply) => {
     const ctx = await base(req, reply, '/', registry);
@@ -103,12 +106,12 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
     await render(registry, reply, 'collection', { ...ctx, pageTitle: collection.title, collection });
   });
 
-  fastify.get('/cart', async (req, reply) => {
+  fastify.get(`/${cartSlug}`, async (req, reply) => {
     const [ctx, cart] = await Promise.all([
-      base(req, reply, '/cart', registry),
+      base(req, reply, `/${cartSlug}`, registry),
       getCartPage(req.cartId),
     ]);
-    await render(registry, reply, 'cart', { ...ctx, pageTitle: 'Your Cart', cart });
+    await render(registry, reply, 'cart', { ...ctx, pageTitle: `Your ${ctx.store.cartLabel}`, cart });
   });
 
   fastify.get('/search', async (req, reply) => {
@@ -137,7 +140,7 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
 
   // ── Cart operations ────────────────────────────────────────────────────────
 
-  fastify.post('/cart/add', async (req, reply) => {
+  fastify.post(`/${cartSlug}/add`, async (req, reply) => {
     const { variantId, quantity } = req.body as { variantId: string; quantity?: string };
     try {
       await addToCart(req.cartId, variantId, parseInt(quantity ?? '1', 10));
@@ -152,21 +155,21 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
         : `<span id="cart-count" class="cart-count" style="display:none"></span>`;
       return reply.type('text/html').send(badge);
     }
-    return reply.redirect('/cart');
+    return reply.redirect(`/${cartSlug}`);
   });
 
-  fastify.post('/cart/update', async (req, reply) => {
+  fastify.post(`/${cartSlug}/update`, async (req, reply) => {
     const { itemId, quantity } = req.body as { itemId: string; quantity: string };
     await updateCartItem(req.cartId, itemId, parseInt(quantity, 10));
     if (req.headers['hx-request']) return cartFragment(registry, req, reply);
-    return reply.redirect('/cart');
+    return reply.redirect(`/${cartSlug}`);
   });
 
-  fastify.delete('/cart/remove/:itemId', async (req, reply) => {
+  fastify.delete(`/${cartSlug}/remove/:itemId`, async (req, reply) => {
     const { itemId } = req.params as { itemId: string };
     await removeFromCart(req.cartId, itemId);
     if (req.headers['hx-request']) return cartFragment(registry, req, reply);
-    return reply.redirect('/cart');
+    return reply.redirect(`/${cartSlug}`);
   });
 
   fastify.setNotFoundHandler(async (req, reply) => {

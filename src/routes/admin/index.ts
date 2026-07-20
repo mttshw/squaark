@@ -11,6 +11,7 @@ import { settingsRoutes } from './settings';
 import { themeRoutes } from './themes';
 import { emailRoutes } from './emails';
 import { importRoutes } from './import';
+import { navigationRoutes } from './navigation';
 import { countOrders } from '../../db/queries/orders';
 import { getAllSettings } from '../../db/queries/admin';
 
@@ -40,6 +41,7 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       await app.register(themeRoutes);
       await app.register(emailRoutes);
       await app.register(importRoutes);
+      await app.register(navigationRoutes);
     },
     { prefix: '/admin' },
   );

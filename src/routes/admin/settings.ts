@@ -13,6 +13,7 @@ export async function settingsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post('/settings/email', emailSettingsSave);
   fastify.post('/settings/email/test', sendTestEmailHandler);
   fastify.post('/settings/media/:slot', uploadMedia);
+  fastify.post('/settings/restart', restartServer);
   fastify.post('/settings/media/:slot/remove', removeMedia);
 }
 
@@ -33,7 +34,7 @@ async function settingsSave(
   req: FastifyRequest<{ Body: Record<string, string> }>,
   reply: FastifyReply,
 ) {
-  const allowed = ['store_name', 'store_currency', 'store_url', 'store_email', 'store_timezone'];
+  const allowed = ['store_name', 'store_currency', 'store_url', 'store_email', 'store_timezone', 'cart_label', 'cart_slug'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) setSetting(key, req.body[key]);
   }
@@ -119,4 +120,10 @@ async function removeMedia(
   if (slot !== 'logo' && slot !== 'icon') return reply.code(400).send('Invalid slot');
   setSetting(`store_${slot}`, '');
   return reply.redirect('/admin/settings?saved=1');
+}
+
+async function restartServer(_req: FastifyRequest, reply: FastifyReply) {
+  reply.code(200).send({ ok: true });
+  // Allow the response to flush before exiting — process manager handles the restart
+  setTimeout(() => process.exit(0), 300);
 }

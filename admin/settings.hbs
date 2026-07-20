@@ -31,6 +31,23 @@
           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
       </div>
       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Cart terminology</label>
+        <div class="grid grid-cols-2 gap-3">
+          <select name="cart_label"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <option value="Cart" {{#if (eq settings.cart_label 'Cart')}}selected{{/if}}>Cart</option>
+            <option value="Basket" {{#if (eq settings.cart_label 'Basket')}}selected{{/if}}>Basket</option>
+            <option value="Bag" {{#if (eq settings.cart_label 'Bag')}}selected{{/if}}>Bag</option>
+          </select>
+          <div>
+            <input type="text" name="cart_slug" value="{{#if settings.cart_slug}}{{settings.cart_slug}}{{else}}cart{{/if}}"
+              placeholder="cart"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <p class="mt-1 text-xs text-gray-400">URL slug — requires restart</p>
+          </div>
+        </div>
+      </div>
+      <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
         <select name="store_currency"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
@@ -182,4 +199,38 @@
     </div>
   </div>
 
+  <!-- Server -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <h2 class="font-semibold mb-1">Server</h2>
+    <p class="text-xs text-gray-400 mb-4">Some settings (e.g. cart URL slug) require a server restart to take effect.</p>
+    <button id="restart-btn" onclick="doRestart()"
+      class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+      Restart server
+    </button>
+    <div id="restart-status" class="hidden mt-3 text-sm text-gray-500"></div>
+  </div>
+
 </div>
+
+<script>
+async function doRestart() {
+  if (!confirm('Restart the server? The admin will be unavailable for a few seconds.')) return;
+  const btn = document.getElementById('restart-btn');
+  const status = document.getElementById('restart-status');
+  btn.disabled = true;
+  btn.textContent = 'Restarting…';
+  status.classList.remove('hidden');
+  status.textContent = 'Waiting for server…';
+
+  try { await fetch('/admin/settings/restart', { method: 'POST' }); } catch {}
+
+  const poll = async () => {
+    try {
+      const res = await fetch('/admin', { method: 'GET', cache: 'no-store' });
+      if (res.ok) { window.location.reload(); return; }
+    } catch {}
+    setTimeout(poll, 1000);
+  };
+  setTimeout(poll, 1500);
+}
+</script>

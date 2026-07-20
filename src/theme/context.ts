@@ -1,4 +1,5 @@
 import { getAllSettings } from '../db/queries/admin';
+import { getNav } from '../routes/admin/navigation';
 
 export interface Money {
   amount: number;      // Minor units (cents)
@@ -63,6 +64,8 @@ export interface GlobalContext {
     logo: string | null;
     icon: string | null;
     currency: { code: string; symbol: string; position: 'before' | 'after' };
+    cartLabel: string;
+    cartSlug: string;
   };
   theme: {
     config: Record<string, Record<string, unknown>>;
@@ -169,6 +172,8 @@ export function buildGlobalContext(
       url: settings.store_url ?? 'http://localhost:3000',
       logo: settings.store_logo || null,
       icon: settings.store_icon || null,
+      cartLabel: settings.cart_label || 'Cart',
+      cartSlug: settings.cart_slug || 'cart',
       currency: {
         code: currencyCode,
         symbol: CURRENCY_SYMBOLS[currencyCode] ?? currencyCode,
@@ -179,16 +184,16 @@ export function buildGlobalContext(
     cart: { itemCount: 0, subtotal: money(0) },
     customer: null,
     navigation: {
-      main: [
-        { label: 'Home', url: '/', active: currentPath === '/', children: [] },
-        { label: 'Shop', url: '/collections/all', active: currentPath.startsWith('/collections'), children: [] },
-        { label: 'Cart', url: '/cart', active: currentPath === '/cart', children: [] },
-      ],
-      footer: [
-        { label: 'About', url: '/about', active: false, children: [] },
-        { label: 'Contact', url: '/contact', active: false, children: [] },
-        { label: 'Privacy', url: '/privacy', active: false, children: [] },
-      ],
+      main: getNav(settings, 'main').map(item => ({
+        ...item,
+        active: item.url === '/' ? currentPath === '/' : currentPath.startsWith(item.url),
+        children: [],
+      })),
+      footer: getNav(settings, 'footer').map(item => ({
+        ...item,
+        active: false,
+        children: [],
+      })),
     },
     currentPath,
   };

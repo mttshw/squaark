@@ -28,7 +28,7 @@
             <p class="text-sm font-semibold text-gray-900">{{money this.lineTotal}}</p>
           </div>
           <div class="flex flex-col items-end gap-3">
-            <button hx-delete="/cart/remove/{{this.id}}"
+            <button hx-delete="/{{../store.cartSlug}}/remove/{{this.id}}"
                     hx-target="#cart-contents"
                     hx-swap="outerHTML"
                     class="text-gray-300 hover:text-red-400 transition-colors" aria-label="Remove">
@@ -37,7 +37,7 @@
               </svg>
             </button>
             <input type="number" value="{{this.quantity}}" min="1"
-                   hx-post="/cart/update"
+                   hx-post="/{{../store.cartSlug}}/update"
                    hx-target="#cart-contents"
                    hx-swap="outerHTML"
                    hx-vals='{"itemId": "{{this.id}}"}'

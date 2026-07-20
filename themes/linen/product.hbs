@@ -87,7 +87,7 @@
         {{/if}}
 
         <!-- Add to cart form -->
-        <form hx-post="/cart/add"
+        <form hx-post="/{{store.cartSlug}}/add"
               hx-target="#cart-count"
               hx-swap="outerHTML"
               hx-indicator="#add-spinner"
@@ -111,7 +111,7 @@
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-dashoffset="12"/>
                 </svg>
               </span>
-              {{#if product.available}}Add to Cart{{else}}Sold Out{{/if}}
+              {{#if product.available}}Add to {{store.cartLabel}}{{else}}Sold Out{{/if}}
             </button>
           </div>
         </form>
