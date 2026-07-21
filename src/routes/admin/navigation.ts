@@ -6,11 +6,13 @@ import { getAllSettings, setSetting } from '../../db/queries/admin';
 
 export interface NavItem { label: string; url: string }
 
-export const DEFAULT_NAV_MAIN: NavItem[] = [
-  { label: 'Home', url: '/' },
-  { label: 'Shop', url: '/collections/all' },
-  { label: 'Cart', url: `/${getAllSettings().cart_slug || 'cart'}` },
-];
+function defaultNavMain(settings: Record<string, string>): NavItem[] {
+  return [
+    { label: 'Home', url: '/' },
+    { label: 'Shop', url: '/collections/all' },
+    { label: 'Cart', url: `/${settings.cart_slug || 'cart'}` },
+  ];
+}
 
 export const DEFAULT_NAV_FOOTER: NavItem[] = [
   { label: 'About', url: '/about' },
@@ -24,7 +26,7 @@ export function getNav(settings: Record<string, string>, location: 'main' | 'foo
     const parsed = JSON.parse(settings[key] ?? '');
     if (Array.isArray(parsed)) return parsed;
   } catch { /* fall through */ }
-  return location === 'main' ? DEFAULT_NAV_MAIN : DEFAULT_NAV_FOOTER;
+  return location === 'main' ? defaultNavMain(settings) : DEFAULT_NAV_FOOTER;
 }
 
 export async function navigationRoutes(fastify: FastifyInstance): Promise<void> {
