@@ -5,6 +5,8 @@ import { getAllSettings, setSetting, getSetting } from '../../db/queries/admin';
 import { getAdminById } from '../../admin/auth';
 import { saveStoreMedia, type StoreMediaSlot } from '../../admin/store-media';
 import { sendTestEmail } from '../../email/send';
+import { listRecentEmailLog } from '../../db/queries/email';
+import { listLogs } from '../../db/queries/system-log';
 import Handlebars from 'handlebars';
 
 export async function settingsRoutes(fastify: FastifyInstance): Promise<void> {
@@ -13,6 +15,7 @@ export async function settingsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post('/settings/email', emailSettingsSave);
   fastify.post('/settings/email/test', sendTestEmailHandler);
   fastify.post('/settings/media/:slot', uploadMedia);
+  fastify.post('/settings/payments', paymentSettingsSave);
   fastify.post('/settings/restart', restartServer);
   fastify.post('/settings/media/:slot/remove', removeMedia);
 }
@@ -23,6 +26,9 @@ async function settingsPage(req: FastifyRequest, reply: FastifyReply) {
     render('settings', {
       admin,
       settings: getAllSettings(),
+      emailLog: listRecentEmailLog(50),
+      paymentLog: listLogs('payment', 50),
+      errorLog: listLogs('error', 50),
       pageTitle: 'Settings',
       pageSection: 'settings',
       saved: 'saved' in (req.query as Record<string, string>),
@@ -38,7 +44,7 @@ async function settingsSave(
   for (const key of allowed) {
     if (req.body[key] !== undefined) setSetting(key, req.body[key]);
   }
-  return reply.redirect('/admin/settings?saved=1');
+  return reply.redirect('/admin/settings?saved=1#store');
 }
 
 async function emailSettingsSave(
@@ -63,6 +69,7 @@ async function emailSettingsSave(
   setSetting('smtp_secure', req.body.smtp_secure === 'on' || req.body.smtp_secure === '1' ? '1' : '0');
 
   return reply.redirect('/admin/settings?saved=1#email');
+
 }
 
 async function sendTestEmailHandler(
@@ -109,7 +116,7 @@ async function uploadMedia(
     return reply.redirect(`/admin/settings?error=${encodeURIComponent(msg)}`);
   }
 
-  return reply.redirect('/admin/settings?saved=1');
+  return reply.redirect('/admin/settings?saved=1#media');
 }
 
 async function removeMedia(
@@ -119,7 +126,19 @@ async function removeMedia(
   const slot = req.params.slot as StoreMediaSlot;
   if (slot !== 'logo' && slot !== 'icon') return reply.code(400).send('Invalid slot');
   setSetting(`store_${slot}`, '');
-  return reply.redirect('/admin/settings?saved=1');
+  return reply.redirect('/admin/settings?saved=1#media');
+}
+
+async function paymentSettingsSave(
+  req: FastifyRequest<{ Body: Record<string, string> }>,
+  reply: FastifyReply,
+) {
+  const allowed = ['stripe_pk', 'stripe_sk', 'stripe_webhook_secret', 'paypal_client_id', 'paypal_client_secret', 'paypal_mode'];
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) setSetting(key, req.body[key]);
+  }
+  return reply.redirect('/admin/settings?saved=1#payments');
+
 }
 
 async function restartServer(_req: FastifyRequest, reply: FastifyReply) {

@@ -9,210 +9,444 @@
 <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{error}}</div>
 {{/if}}
 
-<div class="max-w-xl space-y-5">
+<div class="flex gap-8" x-data="settingsTabs()">
 
-  <!-- Store details -->
-  <form method="POST" action="/admin/settings">
-    <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-      <h2 class="font-semibold">Store</h2>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Store name</label>
-        <input type="text" name="store_name" value="{{settings.store_name}}"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Store URL</label>
-        <input type="url" name="store_url" value="{{settings.store_url}}"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Contact email</label>
-        <input type="email" name="store_email" value="{{settings.store_email}}"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Cart terminology</label>
-        <div class="grid grid-cols-2 gap-3">
-          <select name="cart_label"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <option value="Cart" {{#if (eq settings.cart_label 'Cart')}}selected{{/if}}>Cart</option>
-            <option value="Basket" {{#if (eq settings.cart_label 'Basket')}}selected{{/if}}>Basket</option>
-            <option value="Bag" {{#if (eq settings.cart_label 'Bag')}}selected{{/if}}>Bag</option>
-          </select>
+  <!-- Sidebar nav -->
+  <nav class="w-44 flex-shrink-0">
+    <ul class="space-y-0.5">
+      <li>
+        <button @click="tab = 'store'" :class="tab === 'store' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">Store</button>
+      </li>
+      <li>
+        <button @click="tab = 'email'" :class="tab === 'email' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">Email</button>
+      </li>
+      <li>
+        <button @click="tab = 'payments'" :class="tab === 'payments' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">Payments</button>
+      </li>
+      <li>
+        <button @click="tab = 'media'" :class="tab === 'media' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">Media</button>
+      </li>
+      <li>
+        <button @click="tab = 'server'" :class="tab === 'server' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">Server</button>
+      </li>
+      <li>
+        <button @click="tab = 'logs'" :class="tab === 'logs' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">Logs</button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Panels -->
+  <div class="flex-1 max-w-lg">
+
+    <!-- Store -->
+    <div x-show="tab === 'store'" x-cloak>
+      <form method="POST" action="/admin/settings">
+        <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+          <h2 class="font-semibold">Store</h2>
           <div>
-            <input type="text" name="cart_slug" value="{{#if settings.cart_slug}}{{settings.cart_slug}}{{else}}cart{{/if}}"
-              placeholder="cart"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <p class="mt-1 text-xs text-gray-400">URL slug — requires restart</p>
-          </div>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-        <select name="store_currency"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-          <option value="GBP" {{#if (eq settings.store_currency 'GBP')}}selected{{/if}}>GBP (£)</option>
-          <option value="USD" {{#if (eq settings.store_currency 'USD')}}selected{{/if}}>USD ($)</option>
-          <option value="EUR" {{#if (eq settings.store_currency 'EUR')}}selected{{/if}}>EUR (€)</option>
-        </select>
-      </div>
-    </div>
-    <div class="mt-4">
-      <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-        Save settings
-      </button>
-    </div>
-  </form>
-
-  <!-- Email -->
-  <form method="POST" action="/admin/settings/email" id="email">
-    <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4"
-      x-data="{ provider: '{{settings.email_provider}}' }">
-      <h2 class="font-semibold">Email</h2>
-      <p class="text-xs text-gray-400 -mt-2">
-        Configure how order and account emails are sent. Editable email content lives under
-        <a href="/admin/emails" class="underline">Emails</a>.
-      </p>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">From name</label>
-        <input type="text" name="email_from_name" value="{{settings.email_from_name}}" placeholder="{{settings.store_name}}"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">From address</label>
-        <input type="email" name="email_from_address" value="{{settings.email_from_address}}" placeholder="{{settings.store_email}}"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sending method</label>
-        <select name="email_provider" x-model="provider"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-          <option value="console" {{#if (eq settings.email_provider 'console')}}selected{{/if}}>None yet (log to server console — dev only)</option>
-          <option value="resend" {{#if (eq settings.email_provider 'resend')}}selected{{/if}}>Resend (recommended — API key only)</option>
-          <option value="smtp" {{#if (eq settings.email_provider 'smtp')}}selected{{/if}}>Custom SMTP</option>
-        </select>
-        <p class="text-xs text-gray-400 mt-1.5">
-          Real inboxes (Gmail, Outlook) reject mail sent without a proper provider, so pick Resend or SMTP before going live.
-        </p>
-      </div>
-
-      <div x-show="provider === 'resend'" x-cloak class="space-y-3 pt-2 border-t border-gray-100">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Resend API key</label>
-          <input type="password" name="resend_api_key" value="{{settings.resend_api_key}}" placeholder="re_xxxxxxxx"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
-          <p class="text-xs text-gray-400 mt-1.5">From <a href="https://resend.com/api-keys" target="_blank" class="underline">resend.com/api-keys</a>. The "From address" above must be on a domain verified in Resend.</p>
-        </div>
-      </div>
-
-      <div x-show="provider === 'smtp'" x-cloak class="space-y-3 pt-2 border-t border-gray-100">
-        <div class="grid grid-cols-3 gap-3">
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">SMTP host</label>
-            <input type="text" name="smtp_host" value="{{settings.smtp_host}}" placeholder="smtp.example.com"
+            <label class="block text-sm font-medium text-gray-700 mb-1">Store name</label>
+            <input type="text" name="store_name" value="{{settings.store_name}}"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
-            <input type="number" name="smtp_port" value="{{settings.smtp_port}}"
+            <label class="block text-sm font-medium text-gray-700 mb-1">Store URL</label>
+            <input type="url" name="store_url" value="{{settings.store_url}}"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Contact email</label>
+            <input type="email" name="store_email" value="{{settings.store_email}}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+            <select name="store_currency"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <option value="GBP" {{#if (eq settings.store_currency 'GBP')}}selected{{/if}}>GBP (£)</option>
+              <option value="USD" {{#if (eq settings.store_currency 'USD')}}selected{{/if}}>USD ($)</option>
+              <option value="EUR" {{#if (eq settings.store_currency 'EUR')}}selected{{/if}}>EUR (€)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cart label</label>
+            <div class="grid grid-cols-2 gap-3">
+              <select name="cart_label"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                <option value="Cart" {{#if (eq settings.cart_label 'Cart')}}selected{{/if}}>Cart</option>
+                <option value="Basket" {{#if (eq settings.cart_label 'Basket')}}selected{{/if}}>Basket</option>
+                <option value="Bag" {{#if (eq settings.cart_label 'Bag')}}selected{{/if}}>Bag</option>
+              </select>
+              <div>
+                <input type="text" name="cart_slug" value="{{#if settings.cart_slug}}{{settings.cart_slug}}{{else}}cart{{/if}}"
+                  placeholder="cart"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                <p class="mt-1 text-xs text-gray-400">URL slug — requires restart</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-          <input type="text" name="smtp_user" value="{{settings.smtp_user}}"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <div class="mt-4">
+          <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+            Save settings
+          </button>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input type="password" name="smtp_pass" value="{{settings.smtp_pass}}"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-        </div>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="smtp_secure" value="1" {{#if (eq settings.smtp_secure '1')}}checked{{/if}} class="rounded">
-          <span class="text-sm text-gray-600">Use TLS (usually on for port 465, off for 587)</span>
-        </label>
-      </div>
-    </div>
-    <div class="mt-4 flex items-center gap-3">
-      <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-        Save email settings
-      </button>
-      <button type="button" hx-post="/admin/settings/email/test" hx-target="#email-test-status" hx-swap="innerHTML"
-        class="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:border-gray-400">
-        Send test email
-      </button>
-      <span id="email-test-status"></span>
-    </div>
-  </form>
-
-  <!-- Media -->
-  <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-6">
-    <h2 class="font-semibold">Media</h2>
-
-    <!-- Logo -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-3">Logo</label>
-      {{#if settings.store_logo}}
-      <div class="flex items-center gap-4 mb-3">
-        <div class="w-32 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-2">
-          <img src="{{settings.store_logo}}" alt="Logo" class="max-h-full max-w-full object-contain">
-        </div>
-        <form method="POST" action="/admin/settings/media/logo/remove">
-          <button type="submit" class="text-xs text-red-500 hover:underline">Remove</button>
-        </form>
-      </div>
-      {{/if}}
-      <form method="POST" action="/admin/settings/media/logo" enctype="multipart/form-data">
-        <div class="flex gap-2 items-center">
-          <input type="file" name="file" accept="image/*" required
-            class="flex-1 text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-          <button type="submit" class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 whitespace-nowrap">Upload</button>
-        </div>
-        <p class="text-xs text-gray-400 mt-1.5">PNG, SVG or WebP recommended. Displayed in the store header.</p>
       </form>
     </div>
 
-    <!-- Site icon / Favicon -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-3">Site icon <span class="font-normal text-gray-400">(favicon)</span></label>
-      {{#if settings.store_icon}}
-      <div class="flex items-center gap-4 mb-3">
-        <div class="w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-2">
-          <img src="{{settings.store_icon}}" alt="Icon" class="max-h-full max-w-full object-contain">
+    <!-- Email -->
+    <div x-show="tab === 'email'" x-cloak>
+      <form method="POST" action="/admin/settings/email">
+        <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4"
+          x-data="{ provider: '{{settings.email_provider}}' }">
+          <h2 class="font-semibold">Email</h2>
+          <p class="text-xs text-gray-400 -mt-2">
+            Configure how order and account emails are sent. Editable email content lives under
+            <a href="/admin/emails" class="underline">Emails</a>.
+          </p>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">From name</label>
+            <input type="text" name="email_from_name" value="{{settings.email_from_name}}" placeholder="{{settings.store_name}}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">From address</label>
+            <input type="email" name="email_from_address" value="{{settings.email_from_address}}" placeholder="{{settings.store_email}}"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Sending method</label>
+            <select name="email_provider" x-model="provider"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <option value="console" {{#if (eq settings.email_provider 'console')}}selected{{/if}}>None yet (log to console — dev only)</option>
+              <option value="resend" {{#if (eq settings.email_provider 'resend')}}selected{{/if}}>Resend (recommended)</option>
+              <option value="smtp" {{#if (eq settings.email_provider 'smtp')}}selected{{/if}}>Custom SMTP</option>
+            </select>
+            <p class="text-xs text-gray-400 mt-1.5">
+              Real inboxes reject mail without a proper provider — pick Resend or SMTP before going live.
+            </p>
+          </div>
+          <div x-show="provider === 'resend'" x-cloak class="space-y-3 pt-2 border-t border-gray-100">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Resend API key</label>
+              <input type="password" name="resend_api_key" value="{{settings.resend_api_key}}" placeholder="re_xxxxxxxx"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <p class="text-xs text-gray-400 mt-1.5">From <a href="https://resend.com/api-keys" target="_blank" class="underline">resend.com/api-keys</a>. The from address must be on a verified domain.</p>
+            </div>
+          </div>
+          <div x-show="provider === 'smtp'" x-cloak class="space-y-3 pt-2 border-t border-gray-100">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">SMTP host</label>
+                <input type="text" name="smtp_host" value="{{settings.smtp_host}}" placeholder="smtp.example.com"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                <input type="number" name="smtp_port" value="{{settings.smtp_port}}"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <input type="text" name="smtp_user" value="{{settings.smtp_user}}"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" name="smtp_pass" value="{{settings.smtp_pass}}"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="smtp_secure" value="1" {{#if (eq settings.smtp_secure '1')}}checked{{/if}} class="rounded">
+              <span class="text-sm text-gray-600">Use TLS (port 465 yes, port 587 no)</span>
+            </label>
+          </div>
         </div>
-        <form method="POST" action="/admin/settings/media/icon/remove">
-          <button type="submit" class="text-xs text-red-500 hover:underline">Remove</button>
-        </form>
-      </div>
-      {{/if}}
-      <form method="POST" action="/admin/settings/media/icon" enctype="multipart/form-data">
-        <div class="flex gap-2 items-center">
-          <input type="file" name="file" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml" required
-            class="flex-1 text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-          <button type="submit" class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 whitespace-nowrap">Upload</button>
+        <div class="mt-4 flex items-center gap-3">
+          <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+            Save email settings
+          </button>
+          <button type="button" hx-post="/admin/settings/email/test" hx-target="#email-test-status" hx-swap="innerHTML"
+            class="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:border-gray-400">
+            Send test email
+          </button>
+          <span id="email-test-status"></span>
         </div>
-        <p class="text-xs text-gray-400 mt-1.5">Square PNG or ICO, 32×32 or 64×64px. Shown in browser tabs.</p>
       </form>
     </div>
-  </div>
 
-  <!-- Server -->
-  <div class="bg-white rounded-xl border border-gray-200 p-5">
-    <h2 class="font-semibold mb-1">Server</h2>
-    <p class="text-xs text-gray-400 mb-4">Some settings (e.g. cart URL slug) require a server restart to take effect.</p>
-    <button id="restart-btn" onclick="doRestart()"
-      class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-      Restart server
-    </button>
-    <div id="restart-status" class="hidden mt-3 text-sm text-gray-500"></div>
-  </div>
+    <!-- Payments -->
+    <div x-show="tab === 'payments'" x-cloak>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-5">
+        <h2 class="font-semibold">Payments</h2>
 
+        <!-- Stripe -->
+        <div class="space-y-3 pt-3 border-t border-gray-100">
+          <h3 class="text-sm font-medium text-gray-700">Stripe</h3>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Publishable key</label>
+            <input type="text" id="stripe_pk" name="stripe_pk" value="{{settings.stripe_pk}}" placeholder="pk_live_…"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Secret key</label>
+            <input type="password" id="stripe_sk" name="stripe_sk" value="{{settings.stripe_sk}}" placeholder="sk_live_…"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Webhook secret <span class="text-gray-400">(optional)</span></label>
+            <input type="password" id="stripe_webhook_secret" name="stripe_webhook_secret" value="{{settings.stripe_webhook_secret}}" placeholder="whsec_…"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <p class="text-xs text-gray-400 mt-1">Point your Stripe webhook at <code>{{settings.store_url}}/webhooks/stripe</code>, event: <code>checkout.session.completed</code>.</p>
+          </div>
+        </div>
+
+        <!-- PayPal -->
+        <div class="space-y-3 pt-4 border-t border-gray-100">
+          <h3 class="text-sm font-medium text-gray-700">PayPal</h3>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Mode</label>
+            <select id="paypal_mode" name="paypal_mode"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <option value="sandbox" {{#if (eq settings.paypal_mode 'sandbox')}}selected{{/if}}>Sandbox (testing)</option>
+              <option value="live" {{#if (eq settings.paypal_mode 'live')}}selected{{/if}}>Live</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Client ID</label>
+            <input type="text" id="paypal_client_id" name="paypal_client_id" value="{{settings.paypal_client_id}}" placeholder="AXxx…"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Client secret</label>
+            <input type="password" id="paypal_client_secret" name="paypal_client_secret" value="{{settings.paypal_client_secret}}" placeholder="EXxx…"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="button" onclick="savePayments()"
+            class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+            Save payment settings
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Media -->
+    <div x-show="tab === 'media'" x-cloak>
+      <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-6">
+        <h2 class="font-semibold">Media</h2>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-3">Logo</label>
+          {{#if settings.store_logo}}
+          <div class="flex items-center gap-4 mb-3">
+            <div class="w-32 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-2">
+              <img src="{{settings.store_logo}}" alt="Logo" class="max-h-full max-w-full object-contain">
+            </div>
+            <form method="POST" action="/admin/settings/media/logo/remove">
+              <button type="submit" class="text-xs text-red-500 hover:underline">Remove</button>
+            </form>
+          </div>
+          {{/if}}
+          <form method="POST" action="/admin/settings/media/logo" enctype="multipart/form-data">
+            <div class="flex gap-2 items-center">
+              <input type="file" name="file" accept="image/*" required
+                class="flex-1 text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+              <button type="submit" class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 whitespace-nowrap">Upload</button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">PNG, SVG or WebP recommended. Displayed in the store header.</p>
+          </form>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-3">Site icon <span class="font-normal text-gray-400">(favicon)</span></label>
+          {{#if settings.store_icon}}
+          <div class="flex items-center gap-4 mb-3">
+            <div class="w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-2">
+              <img src="{{settings.store_icon}}" alt="Icon" class="max-h-full max-w-full object-contain">
+            </div>
+            <form method="POST" action="/admin/settings/media/icon/remove">
+              <button type="submit" class="text-xs text-red-500 hover:underline">Remove</button>
+            </form>
+          </div>
+          {{/if}}
+          <form method="POST" action="/admin/settings/media/icon" enctype="multipart/form-data">
+            <div class="flex gap-2 items-center">
+              <input type="file" name="file" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml" required
+                class="flex-1 text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+              <button type="submit" class="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 whitespace-nowrap">Upload</button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">Square PNG or ICO, 32×32 or 64×64px. Shown in browser tabs.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div x-show="tab === 'logs'" x-cloak x-data="{ section: 'email' }">
+
+      <!-- Sub-nav -->
+      <div class="flex gap-1 mb-4 border-b border-gray-200">
+        <button @click="section = 'email'" :class="section === 'email' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-400 hover:text-gray-600'"
+          class="px-3 py-2 text-sm -mb-px transition-colors">Email</button>
+        <button @click="section = 'payments'" :class="section === 'payments' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-400 hover:text-gray-600'"
+          class="px-3 py-2 text-sm -mb-px transition-colors">Payments</button>
+        <button @click="section = 'errors'" :class="section === 'errors' ? 'border-b-2 border-gray-900 text-gray-900 font-medium' : 'text-gray-400 hover:text-gray-600'"
+          class="px-3 py-2 text-sm -mb-px transition-colors">
+          Errors
+          {{#if errorLog.length}}<span class="ml-1 bg-red-100 text-red-600 text-xs px-1.5 py-0.5 rounded-full">{{errorLog.length}}</span>{{/if}}
+        </button>
+      </div>
+
+      <!-- Email log -->
+      <div x-show="section === 'email'">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email sends</span>
+            <span class="text-xs text-gray-400">Last 50</span>
+          </div>
+          {{#if emailLog.length}}
+            <div class="divide-y divide-gray-50">
+              {{#each emailLog}}
+                <div class="px-5 py-3 flex items-start gap-3 text-sm">
+                  <span class="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full {{#if (eq this.status 'sent')}}bg-green-400{{else}}bg-red-400{{/if}}"></span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-baseline gap-2 flex-wrap">
+                      <span class="font-medium text-gray-900 truncate">{{this.subject}}</span>
+                      <span class="text-gray-400 text-xs">→ {{this.to_address}}</span>
+                    </div>
+                    <div class="mt-0.5 text-xs text-gray-400">
+                      {{this.provider}}{{#if this.template_key}} · {{this.template_key}}{{/if}} · {{this.created_at}}
+                    </div>
+                    {{#if this.error}}
+                      <p class="mt-1 text-xs text-red-600 font-mono bg-red-50 rounded px-2 py-1 break-all">{{this.error}}</p>
+                    {{/if}}
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          {{else}}
+            <p class="px-5 py-10 text-center text-sm text-gray-400">No emails sent yet.</p>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Payment log -->
+      <div x-show="section === 'payments'">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Payment events</span>
+            <span class="text-xs text-gray-400">Last 50</span>
+          </div>
+          {{#if paymentLog.length}}
+            <div class="divide-y divide-gray-50">
+              {{#each paymentLog}}
+                <div class="px-5 py-3 flex items-start gap-3 text-sm">
+                  <span class="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full {{#if (eq this.level 'info')}}bg-green-400{{else if (eq this.level 'warn')}}bg-yellow-400{{else}}bg-red-400{{/if}}"></span>
+                  <div class="flex-1 min-w-0">
+                    <span class="font-medium text-gray-900">{{this.message}}</span>
+                    <div class="mt-0.5 text-xs text-gray-400">{{this.created_at}}</div>
+                    {{#if this.meta}}
+                      <div class="mt-1 text-xs text-gray-500 font-mono bg-gray-50 rounded px-2 py-1.5 space-y-0.5">
+                        {{#each (jsonParse this.meta)}}
+                          <div><span class="text-gray-400">{{@key}}</span> {{this}}</div>
+                        {{/each}}
+                      </div>
+                    {{/if}}
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          {{else}}
+            <p class="px-5 py-10 text-center text-sm text-gray-400">No payment events yet.</p>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Error log -->
+      <div x-show="section === 'errors'">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Errors</span>
+            <span class="text-xs text-gray-400">Last 50</span>
+          </div>
+          {{#if errorLog.length}}
+            <div class="divide-y divide-gray-50">
+              {{#each errorLog}}
+                <div class="px-5 py-3 flex items-start gap-3 text-sm">
+                  <span class="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                  <div class="flex-1 min-w-0">
+                    <span class="font-medium text-gray-900">{{this.message}}</span>
+                    <div class="mt-0.5 text-xs text-gray-400">{{this.created_at}}</div>
+                    {{#if this.meta}}
+                      <div class="mt-1 text-xs text-gray-500 font-mono bg-gray-50 rounded px-2 py-1.5 space-y-0.5">
+                        {{#each (jsonParse this.meta)}}
+                          <div><span class="text-gray-400">{{@key}}</span> {{this}}</div>
+                        {{/each}}
+                      </div>
+                    {{/if}}
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          {{else}}
+            <p class="px-5 py-10 text-center text-sm text-gray-400">No errors logged.</p>
+          {{/if}}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Server -->
+    <div x-show="tab === 'server'" x-cloak>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h2 class="font-semibold mb-1">Server</h2>
+        <p class="text-xs text-gray-400 mb-4">Some settings (e.g. cart URL slug) require a server restart to take effect.</p>
+        <button id="restart-btn" onclick="doRestart()"
+          class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+          Restart server
+        </button>
+        <div id="restart-status" class="hidden mt-3 text-sm text-gray-500"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
+function settingsTabs() {
+  const hash = window.location.hash.replace('#', '');
+  const valid = ['store', 'email', 'payments', 'media', 'server', 'logs'];
+  return {
+    tab: valid.includes(hash) ? hash : 'store',
+  };
+}
+
+function savePayments() {
+  const fields = ['stripe_pk', 'stripe_sk', 'stripe_webhook_secret', 'paypal_client_id', 'paypal_client_secret', 'paypal_mode'];
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/admin/settings/payments';
+  fields.forEach(name => {
+    const el = document.getElementById(name);
+    const inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = name;
+    inp.value = el ? el.value : '';
+    form.appendChild(inp);
+  });
+  document.body.appendChild(form);
+  form.submit();
+}
+
 async function doRestart() {
   if (!confirm('Restart the server? The admin will be unavailable for a few seconds.')) return;
   const btn = document.getElementById('restart-btn');

@@ -45,6 +45,9 @@ hbs.registerHelper('percent', (processed: number, total: number) =>
 hbs.registerHelper('parseJson', (json: string) => {
   try { return JSON.parse(json); } catch { return []; }
 });
+hbs.registerHelper('jsonParse', (json: string) => {
+  try { return JSON.parse(json); } catch { return {}; }
+});
 hbs.registerHelper('jsonLength', (json: string) => {
   try { return JSON.parse(json).length; } catch { return 0; }
 });

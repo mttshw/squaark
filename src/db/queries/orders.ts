@@ -1,4 +1,5 @@
-import { query, queryOne } from '../connection';
+import { randomUUID } from 'crypto';
+import { query, queryOne, execute, executeReturning } from '../connection';
 
 export interface OrderRow {
   id: string;
@@ -13,6 +14,10 @@ export interface OrderRow {
   currency: string;
   discount_code: string | null;
   notes: string | null;
+  shipping_address: string;
+  billing_address: string;
+  payment_provider: string | null;
+  payment_reference: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +31,40 @@ export interface OrderItemRow {
   price: number;
   quantity: number;
   line_total: number;
+}
+
+export interface Address {
+  firstName: string;
+  lastName: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  county?: string;
+  postcode: string;
+  country: string;
+  phone?: string;
+}
+
+export interface CreateOrderInput {
+  email: string;
+  subtotal: number;
+  discountAmount: number;
+  shipping: number;
+  total: number;
+  currency: string;
+  discountCode: string | null;
+  notes: string | null;
+  shippingAddress: Address;
+  paymentProvider: string;
+  paymentReference: string | null;
+  items: Array<{
+    variantId: string | null;
+    productTitle: string;
+    variantTitle: string;
+    sku: string | null;
+    price: number;
+    quantity: number;
+  }>;
 }
 
 export function findOrders(limit = 50, offset = 0): OrderRow[] {
@@ -43,6 +82,48 @@ export function findOrderById(id: string): OrderRow | null {
   return queryOne<OrderRow>('SELECT * FROM orders WHERE id = ?', [id]);
 }
 
+export function findOrderByPaymentReference(reference: string): OrderRow | null {
+  return queryOne<OrderRow>('SELECT * FROM orders WHERE payment_reference = ?', [reference]);
+}
+
 export function findOrderItems(orderId: string): OrderItemRow[] {
   return query<OrderItemRow>('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+}
+
+export function createOrder(input: CreateOrderInput): OrderRow {
+  const id = randomUUID();
+  const nextNumber = queryOne<{ n: number }>('SELECT COALESCE(MAX(order_number), 1000) + 1 AS n FROM orders')!.n;
+
+  const row = executeReturning<OrderRow>(`
+    INSERT INTO orders (
+      id, order_number, email, status, fulfillment,
+      subtotal, discount_amount, shipping, total, currency,
+      discount_code, notes, shipping_address, billing_address,
+      payment_provider, payment_reference
+    ) VALUES (?, ?, ?, 'pending', 'unfulfilled', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    RETURNING *
+  `, [
+    id, nextNumber, input.email,
+    input.subtotal, input.discountAmount, input.shipping, input.total, input.currency,
+    input.discountCode, input.notes,
+    JSON.stringify(input.shippingAddress),
+    JSON.stringify(input.shippingAddress),
+    input.paymentProvider, input.paymentReference,
+  ]);
+
+  for (const item of input.items) {
+    execute(`
+      INSERT INTO order_items (id, order_id, variant_id, product_title, variant_title, sku, price, quantity, line_total)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [randomUUID(), id, item.variantId, item.productTitle, item.variantTitle, item.sku, item.price, item.quantity, item.price * item.quantity]);
+  }
+
+  return row;
+}
+
+export function markOrderPaid(orderId: string, paymentReference: string): void {
+  execute(
+    `UPDATE orders SET status = 'paid', payment_reference = ?, updated_at = datetime('now') WHERE id = ?`,
+    [paymentReference, orderId],
+  );
 }

@@ -13,6 +13,7 @@ import { themeRegistry } from './theme/registry';
 import { storefrontRoutes } from './routes/storefront/index';
 import { adminRoutes } from './routes/admin/index';
 import { ensureCart } from './commerce/cart';
+import { writeLog } from './db/queries/system-log';
 
 import './types';
 
@@ -66,6 +67,18 @@ async function build() {
       });
     }
     req.cartId = cartId;
+  });
+
+  // ── Global error handler ───────────────────────────────────────────────────
+  fastify.setErrorHandler((err, req, reply) => {
+    writeLog('error', 'error', err.message || 'Unhandled error', {
+      url: req.url,
+      method: req.method,
+      stack: err.stack?.split('\n').slice(0, 4).join(' | '),
+      statusCode: err.statusCode,
+    });
+    fastify.log.error(err);
+    reply.code(err.statusCode ?? 500).send({ error: err.message });
   });
 
   // ── Routes ─────────────────────────────────────────────────────────────────

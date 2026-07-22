@@ -9,6 +9,12 @@ const config = {
   uploadsDir: path.resolve(process.cwd(), process.env.UPLOADS_DIR || 'uploads'),
   sessionSecret: process.env.SESSION_SECRET || 'dev-secret-change-in-production-min32chars!',
   databasePath: path.resolve(process.cwd(), process.env.DATABASE_PATH || 'data/store.db'),
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+  stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
+  paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || '',
+  paypalMode: (process.env.PAYPAL_MODE || 'sandbox') as 'sandbox' | 'live',
 };
 
 export default config;

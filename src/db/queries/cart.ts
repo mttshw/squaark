@@ -46,15 +46,18 @@ export function findCartItems(cartId: string): CartItemRow[] {
       p.id         AS product_id,
       p.title      AS product_title,
       p.slug       AS product_slug,
-      pi.thumbnail AS img_thumbnail,
-      pi.medium    AS img_medium,
-      pi.large     AS img_large,
-      pi.original  AS img_original,
-      pi.alt       AS img_alt
+      COALESCE(pvi.thumbnail, ppi.thumbnail) AS img_thumbnail,
+      COALESCE(pvi.medium,    ppi.medium)    AS img_medium,
+      COALESCE(pvi.large,     ppi.large)     AS img_large,
+      COALESCE(pvi.original,  ppi.original)  AS img_original,
+      COALESCE(pvi.alt,       ppi.alt)       AS img_alt
     FROM cart_items ci
-    JOIN product_variants pv ON pv.id  = ci.variant_id
-    JOIN products p           ON p.id  = pv.product_id
-    LEFT JOIN product_images pi ON pi.id = pv.image_id
+    JOIN product_variants pv ON pv.id = ci.variant_id
+    JOIN products p           ON p.id = pv.product_id
+    LEFT JOIN product_images pvi ON pvi.id = pv.image_id
+    LEFT JOIN product_images ppi ON ppi.product_id = p.id AND ppi.position = (
+      SELECT MIN(position) FROM product_images WHERE product_id = p.id
+    )
     WHERE ci.cart_id = ?
     ORDER BY ci.created_at
   `, [cartId]);
@@ -80,4 +83,8 @@ export function updateCartItemQuantity(cartId: string, itemId: string, quantity:
 
 export function removeCartItem(cartId: string, itemId: string): void {
   execute('DELETE FROM cart_items WHERE id = ? AND cart_id = ?', [itemId, cartId]);
+}
+
+export function clearCart(cartId: string): void {
+  execute('DELETE FROM cart_items WHERE cart_id = ?', [cartId]);
 }

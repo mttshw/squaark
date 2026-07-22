@@ -4,6 +4,9 @@ declare module 'fastify' {
   }
   interface Session {
     adminId: string;
+    pendingOrderId?: string;
+    pendingCheckoutAddress?: string;
+    pendingCheckoutEmail?: string;
   }
 }
 

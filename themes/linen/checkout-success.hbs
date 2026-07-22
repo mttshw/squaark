@@ -1,0 +1,59 @@
+{{> header}}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+  <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6" style="background:var(--color-accent)">
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+    </svg>
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-2">Order confirmed</h1>
+  <p class="text-gray-500 mb-1">Order <span class="font-medium text-gray-700">#{{order.order_number}}</span></p>
+  <p class="text-sm text-gray-400 mb-10">A confirmation has been sent to <span class="text-gray-600">{{order.email}}</span></p>
+
+  <!-- Items -->
+  <div class="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left mb-6">
+    <h2 class="font-semibold text-gray-900 mb-4 text-sm">Items ordered</h2>
+    <div class="divide-y divide-gray-100">
+      {{#each order.items}}
+        <div class="py-3 flex justify-between items-center gap-4">
+          <div>
+            <p class="text-sm font-medium text-gray-900">{{this.product_title}}</p>
+            {{#unless (is this.variant_title "Default")}}
+              <p class="text-xs text-gray-400">{{this.variant_title}}</p>
+            {{/unless}}
+            <p class="text-xs text-gray-500">Qty {{this.quantity}}</p>
+          </div>
+          <p class="text-sm font-medium text-gray-900 flex-shrink-0">{{money this.line_total}}</p>
+        </div>
+      {{/each}}
+    </div>
+    <div class="border-t border-gray-200 mt-4 pt-4 flex justify-between font-bold text-gray-900 text-sm">
+      <span>Total</span>
+      <span>{{money order.total}}</span>
+    </div>
+  </div>
+
+  <!-- Shipping address -->
+  {{#if order.shippingAddress.line1}}
+    <div class="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left mb-10">
+      <h2 class="font-semibold text-gray-900 mb-3 text-sm">Shipping to</h2>
+      <address class="not-italic text-sm text-gray-600 leading-relaxed">
+        {{order.shippingAddress.firstName}} {{order.shippingAddress.lastName}}<br>
+        {{order.shippingAddress.line1}}<br>
+        {{#if order.shippingAddress.line2}}{{order.shippingAddress.line2}}<br>{{/if}}
+        {{order.shippingAddress.city}}{{#if order.shippingAddress.county}}, {{order.shippingAddress.county}}{{/if}}<br>
+        {{order.shippingAddress.postcode}}<br>
+        {{order.shippingAddress.country}}
+      </address>
+    </div>
+  {{/if}}
+
+  <a href="/collections/all"
+     class="inline-block px-8 py-3 text-sm font-semibold text-white rounded-xl hover:opacity-90 transition-all"
+     style="background:var(--color-primary)">
+    Continue Shopping
+  </a>
+</div>
+
+{{> footer}}
