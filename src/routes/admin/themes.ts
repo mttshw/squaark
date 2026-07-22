@@ -8,6 +8,7 @@ import {
   findAllThemes, findThemeById, activateTheme, saveConfigOverrides,
 } from '../../db/queries/themes';
 import { loadManifest, resolveConfig, type ConfigField, type ThemeManifest } from '../../theme/config';
+import { findAllCollections } from '../../db/queries/collections';
 import { themeRegistry } from '../../theme/registry';
 import { installThemeFromZip } from '../../admin/themes';
 import { saveThemeImage } from '../../admin/store-media';
@@ -117,7 +118,12 @@ function applyOverridesFromBody(
 }
 
 /** Builds the row/cell view-model a repeater field needs to render in the customiser. */
-function buildRepeaterView(flatKey: string, field: ConfigField, value: unknown) {
+function buildRepeaterView(
+  flatKey: string,
+  field: ConfigField,
+  value: unknown,
+  collections: Array<{ slug: string; title: string }> = [],
+) {
   const rowsData = Array.isArray(value) ? value : [];
   const itemFields = field.itemFields ?? {};
   const containerId = `repeater-${flatKey.replace(/\./g, '-')}`;
@@ -126,6 +132,7 @@ function buildRepeaterView(flatKey: string, field: ConfigField, value: unknown) 
       type: itemField.type,
       label: itemField.label,
       options: itemField.options,
+      collectionOptions: itemField.type === 'collection' ? collections : undefined,
       value: (rowValue as Record<string, unknown>)?.[itemKey] ?? itemField.default,
       name: `${flatKey}[${index}][${itemKey}]`,
     })),
@@ -151,6 +158,8 @@ async function configPage(
   // Reset any unsaved preview state back to persisted DB config when opening the editor
   if (theme.active === 1) themeRegistry.applyPreview(overrides);
 
+  const allCollections = findAllCollections().map(c => ({ slug: c.slug, title: c.title }));
+
   const sections = Object.entries(manifest.config ?? {}).map(([sectionName, fields]) => ({
     name: sectionName,
     fields: Object.entries(fields).map(([key, field]) => {
@@ -164,7 +173,7 @@ async function configPage(
         cssVar: CSS_VAR_MAP[flatKey] ?? null,
         cssVarIsFont: (CSS_VAR_MAP[flatKey] ?? '').startsWith('--font-'),
       };
-      return field.type === 'repeater' ? { ...base, ...buildRepeaterView(flatKey, field, value) } : base;
+      return field.type === 'repeater' ? { ...base, ...buildRepeaterView(flatKey, field, value, allCollections) } : base;
     }),
   }));
 
@@ -172,6 +181,7 @@ async function configPage(
     render('themes/config', {
       ...adminCtx(req),
       theme, manifest, resolved, sections,
+      collectionsJson: JSON.stringify(allCollections),
       saved: 'saved' in (req.query as Record<string, string>),
       error: (req.query as Record<string, string>).error ?? null,
       pageTitle: `${theme.name} — Customise`,

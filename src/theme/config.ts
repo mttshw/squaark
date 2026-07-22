@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 export interface ConfigField {
-  type: 'color' | 'text' | 'select' | 'boolean' | 'image' | 'repeater';
+  type: 'color' | 'text' | 'select' | 'boolean' | 'image' | 'repeater' | 'collection';
   label: string;
   default: string | boolean | Record<string, unknown>[];
   options?: string[];

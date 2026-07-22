@@ -58,15 +58,16 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
     const ctx = await base(req, reply, '/', registry);
     const layout = ctx.theme.config.layout ?? {};
     const sectionsConfig = Array.isArray(layout.featuredSections)
-      ? layout.featuredSections as Array<{ title?: string; collection?: string; count?: string }>
+      ? layout.featuredSections as Array<{ title?: string; collection?: string; count?: string; sort?: string }>
       : [];
     const featuredSections = await Promise.all(sectionsConfig.map(async (section) => {
       const collectionSlug = (section.collection ?? '').trim();
       const count = parseInt(section.count ?? '', 10) || 8;
+      const sort = section.sort === 'newest' ? 'newest' : 'featured';
       return {
         title: section.title?.trim() || 'Featured Products',
         collectionSlug,
-        products: await listFeaturedProducts(collectionSlug, count),
+        products: await listFeaturedProducts(collectionSlug, count, sort),
       };
     }));
     await render(registry, reply, 'index', {

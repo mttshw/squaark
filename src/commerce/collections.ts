@@ -36,18 +36,26 @@ const SORT_OPTIONS = [
 ];
 
 export async function getCollectionPage(slug: string, sortBy = 'featured'): Promise<CollectionPage | null> {
-  const row = findCollectionBySlug(slug);
-  if (!row) return null;
+  let products: ProductSummary[];
+  let meta: { id: string; title: string; slug: string; description: string | null; productCount: number };
 
-  const products = await listCollectionProducts(row.id);
+  if (slug === 'all') {
+    products = await listProducts();
+    meta = { id: '', title: 'All Products', slug: 'all', description: null, productCount: products.length };
+  } else {
+    const row = findCollectionBySlug(slug);
+    if (!row) return null;
+    products = await listCollectionProducts(row.id);
+    meta = rowToCollection(row);
+  }
 
   const sorted = [...products];
   if (sortBy === 'price-asc')  sorted.sort((a, b) => a.price.amount - b.price.amount);
   if (sortBy === 'price-desc') sorted.sort((a, b) => b.price.amount - a.price.amount);
-  if (sortBy === 'newest')     sorted.reverse();
+  if (sortBy === 'newest')     sorted.sort((a, b) => b.id.localeCompare(a.id));
 
   return {
-    ...rowToCollection(row),
+    ...meta,
     products: sorted,
     pagination: { currentPage: 1, totalPages: 1, hasNext: false, hasPrev: false, nextUrl: null, prevUrl: null },
     sort: { current: sortBy, options: SORT_OPTIONS },
@@ -59,9 +67,9 @@ export async function listCollections(): Promise<Collection[]> {
 }
 
 /** Products for a homepage featured section — all products when collectionSlug is blank. */
-export async function listFeaturedProducts(collectionSlug: string, limit: number): Promise<ProductSummary[]> {
+export async function listFeaturedProducts(collectionSlug: string, limit: number, sort: 'featured' | 'newest' = 'featured'): Promise<ProductSummary[]> {
   if (!collectionSlug) return listProducts(limit);
   const row = findCollectionBySlug(collectionSlug);
   if (!row) return [];
-  return listCollectionProducts(row.id, limit);
+  return listCollectionProducts(row.id, limit, sort);
 }

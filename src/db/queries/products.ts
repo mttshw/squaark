@@ -93,12 +93,13 @@ export function findAllProducts(limit?: number): ProductRow[] {
   return limit ? query<ProductRow>(sql, [limit]) : query<ProductRow>(sql);
 }
 
-export function findProductsByCollection(collectionId: string, limit?: number): ProductRow[] {
+export function findProductsByCollection(collectionId: string, limit?: number, sort: 'featured' | 'newest' = 'featured'): ProductRow[] {
+  const order = sort === 'newest' ? 'p.created_at DESC' : 'cp.position';
   const sql = `
     ${PRODUCT_SUMMARY_SQL}
     JOIN collection_products cp ON cp.product_id = p.id
     WHERE p.published = 1 AND cp.collection_id = ?
-    ORDER BY cp.position${limit ? ' LIMIT ?' : ''}
+    ORDER BY ${order}${limit ? ' LIMIT ?' : ''}
   `;
   return limit
     ? query<ProductRow>(sql, [collectionId, limit])

@@ -62,8 +62,8 @@ export async function listProducts(limit?: number): Promise<ProductSummary[]> {
   return findAllProducts(limit).map(rowToProductSummary);
 }
 
-export async function listCollectionProducts(collectionId: string, limit?: number): Promise<ProductSummary[]> {
-  return findProductsByCollection(collectionId, limit).map(rowToProductSummary);
+export async function listCollectionProducts(collectionId: string, limit?: number, sort: 'featured' | 'newest' = 'featured'): Promise<ProductSummary[]> {
+  return findProductsByCollection(collectionId, limit, sort).map(rowToProductSummary);
 }
 
 export interface FullProduct {
