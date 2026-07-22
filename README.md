@@ -1,21 +1,13 @@
 # Squaark
 
-A lightweight, self-hosted ecommerce platform. One Node.js process, one SQLite
-database - no Redis, no separate search service, no SPA build step.
+Self-hosted ecommerce platform. Keeping it simple with Node.js + SQLite.
 
 ## Requirements
 
-- Node.js 20 or 22 (LTS). Stick to an LTS line - `better-sqlite3` and `sharp`
-  ship prebuilt binaries for supported Node versions, and a very new/current
-  release (e.g. Node 26) may have no prebuilt binary yet, forcing a from-source
-  compile that can fail on compiler version mismatches.
+- Node.js 20 or 22 (LTS). Newer versions like 26 may not have prebuilt binaries for `better-sqlite3` and `sharp`, which means a from-source compile that can fail on compiler mismatches.
 - npm
 
-`better-sqlite3` and `sharp` compile native bindings on install if no
-prebuilt binary matches your platform/Node version, so on Linux you'll need a
-C++ toolchain available (`build-essential` on Debian/Ubuntu, `apk add python3
-make g++` on Alpine - see the `Dockerfile` if you'd rather skip this
-entirely).
+On Linux you'll need a C++ toolchain if no prebuilt binary matches your platform (`build-essential` on Debian/Ubuntu, `apk add python3 make g++` on Alpine). The `Dockerfile` sidesteps this.
 
 ## Quick start
 
@@ -27,103 +19,66 @@ cp .env.example .env
 npm run dev
 ```
 
-Open [http://localhost:3000/admin](http://localhost:3000/admin). With no admin
-account yet, you'll land on a one-time setup page - create your name, email,
-and password there.
+Open [http://localhost:3000/admin](http://localhost:3000/admin). With no admin account yet you'll land on a setup page to create your credentials.
 
-That's the whole install. The database schema is created automatically on
-first boot (and on every boot after that, it's a no-op if there's nothing new
-to apply) - there's no separate migration step to remember.
+The database schema is created automatically on first boot, there is no separate migration step.
 
 ## After logging in
 
-A fresh store is functional but empty. Worth doing next, in this order:
-
-1. **Settings → Store** - set your store name, currency, and contact email.
-2. **Settings → Email** - configure how order/account emails get sent.
-   Defaults to logging emails to the server console (fine for local dev).
-   For anything real, pick a provider:
-   - **Resend** - paste an API key, done.
-   - **Custom SMTP** - works with any provider (Gmail, SES, Mailgun, Postmark, etc.).
-
-   Use the "Send test email" button on that page to confirm it's working.
-3. **Emails** - the transactional email templates (order confirmation, order
-   shipped, admin new-order notice, password reset) live here. Each is
-   editable Handlebars, with a live preview against sample data.
-4. **Themes** - the bundled `linen` theme is active by default. Upload and
-   activate a different theme, or customise colours/fonts/layout from its
-   config page, including homepage featured sections (pick a collection and
-   how many products to show, per section).
-5. **Pages** - build pages from a section builder (text, image, image + text,
-   call to action, columns), or import existing pages from a WordPress export
-   via **Import**.
-6. **Navigation** - edit the main and footer nav links shown by the active
-   theme.
-7. **Products / Collections** - run `npm run db:seed` for sample catalogue
-   data to explore with, or start adding your own.
+1. **Settings > Store** - store name, currency, contact email.
+2. **Settings > Email** - how transactional emails get sent. Defaults to logging to the server console (fine for local dev). For real sending, pick Resend (API key only) or a custom SMTP provider. Use the test button to confirm it works.
+3. **Emails** - editable Handlebars templates for order confirmation, shipping, admin notifications, password reset. Live preview against sample data.
+4. **Themes** - the `linen` theme is active by default. Customise colours, fonts, and layout from its config page, or upload a different theme.
+5. **Pages** - build pages with a section builder (text, image, image + text, CTA, columns), or import from a WordPress export via **Import**.
+6. **Navigation** - edit the main and footer nav links.
+7. **Products / Collections** - `npm run db:seed` loads sample catalogue data, or add your own.
 
 ## Scripts
 
-| Command            | Description                                          |
-| ------------------- | ---------------------------------------------------- |
-| `npm run dev`       | Start the server with hot reload (tsx watch)          |
-| `npm start`         | Start the built server (`npm run build` first)        |
-| `npm run build`     | Compile TypeScript to `dist/` and copy migration SQL files alongside it |
-| `npm run db:migrate`| Apply any pending database migrations manually        |
-| `npm run db:seed`   | Seed the database with sample products/collections    |
-| `npm run css:build` | Rebuild the default theme's Tailwind CSS (minified)   |
-| `npm run css:watch` | Rebuild the default theme's CSS on change             |
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start with hot reload |
+| `npm start` | Start the built server (`npm run build` first) |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run db:migrate` | Apply pending migrations manually |
+| `npm run db:seed` | Seed with sample products/collections |
+| `npm run css:build` | Rebuild the linen theme's Tailwind CSS |
+| `npm run css:watch` | Rebuild on change |
 
-You only need the `css:*` scripts if you're editing the bundled theme's
-styles - the shipped `themes/linen/assets/style.css` is already built.
+The `css:*` scripts are only needed if you're editing the bundled theme. `themes/linen/assets/style.css` is already built.
 
 ## Configuration
 
-All runtime config is via environment variables - copy `.env.example` to
-`.env` and adjust as needed:
+Copy `.env.example` to `.env`:
 
-| Variable          | Default              | Notes                                   |
-| ----------------- | --------------------- | ---------------------------------------- |
-| `PORT`            | `3000`                |                                          |
-| `HOST`            | `0.0.0.0`             |                                          |
-| `NODE_ENV`        | `development`         | Set to `production` when deploying      |
-| `THEME_DIR`       | `themes/linen`        | Active theme's directory                |
-| `UPLOADS_DIR`     | `uploads`             | Product image uploads                   |
-| `SESSION_SECRET`  | (dev default - change this) | Must be a strong random value in production |
-| `DATABASE_PATH`   | `data/store.db`       | SQLite file location                    |
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `PORT` | `3000` | |
+| `HOST` | `0.0.0.0` | |
+| `NODE_ENV` | `development` | Set to `production` when deploying |
+| `THEME_DIR` | `themes/linen` | Active theme directory |
+| `UPLOADS_DIR` | `uploads` | Product image uploads |
+| `SESSION_SECRET` | (dev default) | Use a strong random value in production |
+| `DATABASE_PATH` | `data/store.db` | SQLite file location |
 
-Store-level settings (name, currency, logo, email provider, etc.) are
-configured from the admin UI, not environment variables, so they can be
-changed without a redeploy.
+Store-level settings (name, currency, logo, email provider, etc.) are in the admin UI, not env vars.
 
-## Running with Docker
+## Docker
 
 ```bash
 docker compose up
 ```
 
-This builds the app image (multi-stage - compiles in a build stage, ships only
-the compiled output and production `node_modules` in the final image) and
-starts a single container with a persistent volume for the SQLite database.
-Not required - `npm run build && node dist/server.js` works anywhere Node 20
-or 22 runs - but it saves you from compiling native modules yourself and
-matches the one-command self-host story above.
-
-Note: `docker-compose.yml` only mounts a volume for `/data` (the database).
-Uploaded product/theme images live under `/app/uploads` inside the container
-and aren't persisted across container recreation unless you add a volume for
-that path too.
+Multi-stage build: compiles in a build stage, ships only compiled output and production `node_modules`. A volume is mounted for `/data` (the database). Uploaded images under `/app/uploads` aren't persisted across container recreation unless you add a volume for that path too.
 
 ## Project structure
-
-See [theme_engine_spec.md](theme_engine_spec.md) for the full technical
-specification (rendering pipeline, theme file format, Handlebars helpers,
-htmx conventions). In short:
 
 - `src/routes/` - Fastify routes: `storefront/`, `admin/`, `api/`
 - `src/commerce/` - products, collections, cart, orders
 - `src/theme/` - Handlebars engine, helpers, context builders
-- `src/email/` - transactional email transports, templates, sending
-- `src/db/migrations/` - SQL migration files, applied automatically on boot
-- `themes/linen/` - the bundled default theme
+- `src/email/` - transactional email transports and templates
+- `src/db/migrations/` - SQL migration files, applied on boot
+- `themes/linen/` - bundled default theme
 - `admin/` - admin panel Handlebars templates
+
+See [theme_engine_spec.md](theme_engine_spec.md) for the full technical spec.
