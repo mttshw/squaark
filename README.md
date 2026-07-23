@@ -25,13 +25,18 @@ The database schema is created automatically on first boot, there is no separate
 
 ## After logging in
 
-1. **Settings > Store** - store name, currency, contact email.
+1. **Settings > Store** - store name, currency, contact email, tagline. Toggle customer accounts on/off here.
 2. **Settings > Email** - how transactional emails get sent. Defaults to logging to the server console (fine for local dev). For real sending, pick Resend (API key only) or a custom SMTP provider. Use the test button to confirm it works.
-3. **Emails** - editable Handlebars templates for order confirmation, shipping, admin notifications, password reset. Live preview against sample data.
-4. **Themes** - the `linen` theme is active by default. Customise colours, fonts, and layout from its config page, or upload a different theme.
-5. **Pages** - build pages with a section builder (text, image, image + text, CTA, columns), or import from a WordPress export via **Import**.
-6. **Navigation** - edit the main and footer nav links.
-7. **Products / Collections** - `npm run db:seed` loads sample catalogue data, or add your own.
+3. **Settings > Payments** - paste in Stripe and/or PayPal credentials. Both providers can be active at the same time.
+4. **Settings > Logs** - live view of payment events, sent emails, and server errors. Useful for debugging without touching the server.
+5. **Emails** - editable Handlebars templates for order confirmation, shipping, admin notifications, password reset. Live preview against sample data.
+6. **Themes** - the `linen` theme is active by default. Customise colours, fonts, and layout from its config page, or upload a different theme.
+7. **Pages** - build pages with a section builder (text, image, image + text, CTA, columns), or import from a WordPress export via **Import**.
+8. **Navigation** - edit the main and footer nav links.
+9. **Users** - add staff accounts with restricted access (products and orders only, no settings or theme access).
+10. **Products / Collections** - `npm run db:seed` loads sample catalogue data, or add your own.
+
+The dashboard shows basic traffic analytics (page views, unique visitors, top pages, referrers) collected from storefront requests. No external service or cookie consent needed — bots are filtered by user agent and IPs are hashed before storage.
 
 ## Scripts
 
