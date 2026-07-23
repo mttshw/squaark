@@ -182,11 +182,19 @@
         title="Open in new tab">Open ↗</a>
     </div>
 
-    <!-- iframe -->
-    <iframe id="squaark-preview" src="/"
-      style="flex:1;border:none;background:#fff;"
-      onload="onPreviewLoad()">
-    </iframe>
+    <!-- iframe + loading overlay -->
+    <div style="position:relative;flex:1;overflow:hidden;">
+      <iframe id="squaark-preview" src="/"
+        style="width:100%;height:100%;border:none;background:#fff;"
+        onload="onPreviewLoad()">
+      </iframe>
+      <div id="preview-loading"
+           style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.6);align-items:center;justify-content:center;pointer-events:none;">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.75rem 1.25rem;font-size:0.8rem;color:#6b7280;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+          Updating preview…
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -194,28 +202,52 @@
 <script>
   var previewReady = false;
   var debounceTimer = null;
-  var pendingReload = false;
   var THEME_ID = '{{theme.id}}';
+
+  // Fields that only need a CSS-var injection (no server round-trip or reload)
+  var CSS_VAR_ONLY = new Set(['data-css-var']);
+  // Fields that require a full page reload (structural layout changes)
+  var RELOAD_FIELDS = new Set([
+    'layout.heroPosition', 'layout.heroAlign', 'layout.productsPerRow',
+    'layout.heroImage', 'layout.heroImageFit', 'layout.heroImagePadding',
+    'layout.showHero', 'layout.featuredSections'
+  ]);
+
+  // ── Loading overlay ─────────────────────────────────────────────────────────
+
+  function showLoading() {
+    var el = document.getElementById('preview-loading');
+    if (el) el.style.display = 'flex';
+  }
+
+  function hideLoading() {
+    var el = document.getElementById('preview-loading');
+    if (el) el.style.display = 'none';
+  }
 
   // ── iframe lifecycle ────────────────────────────────────────────────────────
 
   function onPreviewLoad() {
     previewReady = true;
-    injectCssVars(); // re-apply current colours after every reload
-    if (pendingReload) { pendingReload = false; }
+    hideLoading();
+    injectCssVars();
   }
 
   function navigatePreview(url) {
     var iframe = document.getElementById('squaark-preview');
     previewReady = false;
+    showLoading();
     iframe.src = url;
   }
 
   function reloadPreviewIframe() {
     var iframe = document.getElementById('squaark-preview');
     var doc = iframe.contentDocument;
-    var currentUrl = doc && doc.location ? doc.location.href : '/';
+    var currentUrl = (doc && doc.location && doc.location.href) ? doc.location.href : '/';
+    // Stay on same host — never navigate to an external URL
+    if (currentUrl.startsWith('http') && !currentUrl.includes(location.host)) currentUrl = '/';
     previewReady = false;
+    showLoading();
     iframe.src = currentUrl;
   }
 
@@ -237,33 +269,41 @@
 
   // ── Debounced preview-apply (all fields → server re-render) ─────────────────
 
-  function schedulePreview() {
+  function schedulePreview(needsReload) {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(applyPreview, 400);
+    // Text-only changes use a longer debounce; structural changes reload sooner
+    var delay = needsReload ? 600 : 1200;
+    debounceTimer = setTimeout(function() { applyPreview(needsReload); }, delay);
   }
 
-  function applyPreview() {
-    // Browsers include all associated controls (form="config-form") when constructing FormData
+  function applyPreview(needsReload) {
     var form = document.getElementById('config-form');
     var body = new URLSearchParams(new FormData(form));
     fetch('/admin/themes/' + THEME_ID + '/preview-apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body
-    }).then(function() {
-      reloadPreviewIframe();
+    }).then(function(res) {
+      if (res.ok && needsReload) reloadPreviewIframe();
+    }).catch(function() {
+      hideLoading();
     });
   }
 
   // ── Wire up all inputs ──────────────────────────────────────────────────────
 
-  // Listen on the container — inputs use form="config-form" so events bubble here
   document.getElementById('config-fields').addEventListener('input', function(e) {
     var el = e.target;
+    var fieldName = el.name || '';
     // Instant CSS injection for colour/font fields
-    if (el.dataset && el.dataset.cssVar) injectCssVars();
-    // Debounced full render for everything
-    schedulePreview();
+    if (el.dataset && el.dataset.cssVar) {
+      injectCssVars();
+      // CSS vars don't need a reload — just inject and stop
+      return;
+    }
+    // Structural fields need a full reload; text fields just persist to server
+    var needsReload = RELOAD_FIELDS.has(fieldName) || fieldName.startsWith('layout.featuredSections');
+    schedulePreview(needsReload);
   });
 
   // Sync hex text input → colour picker (typing a valid hex updates the swatch)
@@ -339,15 +379,23 @@
     row.appendChild(removeBtn);
 
     container.appendChild(row);
-    schedulePreview();
+    schedulePreview(true);
   }
+
+  // Selects and checkboxes fire 'change', not 'input'
+  document.getElementById('config-fields').addEventListener('change', function(e) {
+    var el = e.target;
+    if (el.tagName === 'SELECT' || el.type === 'checkbox') {
+      schedulePreview(true);
+    }
+  });
 
   // Delegated so it covers both server-rendered rows and ones added above
   document.getElementById('config-fields').addEventListener('click', function(e) {
     var addBtn = e.target.closest('.add-row-btn');
     if (addBtn) { addRepeaterRow(addBtn); return; }
     var removeBtn = e.target.closest('.remove-row-btn');
-    if (removeBtn) { removeBtn.closest('.repeater-row').remove(); schedulePreview(); }
+    if (removeBtn) { removeBtn.closest('.repeater-row').remove(); schedulePreview(true); }
   });
 
   window.squaarkCollections = {{{collectionsJson}}};

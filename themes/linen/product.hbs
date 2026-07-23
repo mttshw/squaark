@@ -1,40 +1,39 @@
 {{> header}}
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="container py-12">
 
     <!-- Breadcrumb -->
-    <nav class="flex items-center gap-2 text-xs text-gray-400 mb-8">
-      <a href="/" class="hover:text-gray-700">Home</a>
+    <nav class="breadcrumb">
+      <a href="/">Home</a>
       <span>/</span>
-      <a href="/collections/all" class="hover:text-gray-700">Shop</a>
+      <a href="/collections/all">Shop</a>
       <span>/</span>
-      <span class="text-gray-700">{{product.title}}</span>
+      <span>{{product.title}}</span>
     </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+    <div class="product-layout">
 
       <!-- Images -->
-      <div class="space-y-4">
+      <div class="product-images">
         {{#if product.images.length}}
-          <div class="product-image-wrap aspect-square bg-gray-50 rounded-2xl overflow-hidden">
+          <div class="product-main-image">
             <img id="main-image"
                  src="{{product.images.0.large}}"
-                 alt="{{product.images.0.alt}}"
-                 class="w-full h-full object-cover">
+                 alt="{{product.images.0.alt}}">
           </div>
           {{#if (gt product.images.length 1)}}
-            <div class="grid grid-cols-4 gap-2">
+            <div class="product-thumbs">
               {{#each product.images}}
                 <button onclick="document.getElementById('main-image').src='{{this.large}}'"
-                        class="aspect-square bg-gray-50 rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-gray-300 transition-all">
-                  <img src="{{this.thumbnail}}" alt="{{this.alt}}" class="w-full h-full object-cover">
+                        class="product-thumb">
+                  <img src="{{this.thumbnail}}" alt="{{this.alt}}">
                 </button>
               {{/each}}
             </div>
           {{/if}}
         {{else}}
-          <div class="aspect-square bg-gray-100 rounded-2xl flex items-center justify-center text-gray-300">
-            <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="product-no-image">
+            <svg width="96" height="96" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01"/>
             </svg>
@@ -43,36 +42,35 @@
       </div>
 
       <!-- Product info -->
-      <div class="flex flex-col">
+      <div class="product-info">
         {{#if product.vendor}}
-          <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">{{product.vendor}}</p>
+          <p class="product-vendor-label">{{product.vendor}}</p>
         {{/if}}
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-4 leading-tight">{{product.title}}</h1>
+        <h1 class="product-title">{{product.title}}</h1>
 
         <!-- Price -->
-        <div class="flex items-baseline gap-3 mb-6">
-          <span id="product-price" class="text-2xl font-bold {{#if product.onSale}}text-accent{{/if}}" style="{{#if product.onSale}}color:var(--color-accent){{/if}}">
+        <div class="product-price-row">
+          <span id="product-price" class="product-price {{#if product.onSale}}product-price--sale{{/if}}">
             {{money product.price}}
           </span>
           {{#if product.compareAtPrice}}
-            <span class="text-lg text-gray-400 line-through">{{money product.compareAtPrice}}</span>
+            <span class="product-compare-price">{{money product.compareAtPrice}}</span>
             <span class="badge-sale">Sale</span>
           {{/if}}
         </div>
 
         <!-- Description -->
-        <div class="prose prose-sm text-gray-600 mb-8 leading-relaxed">
+        <div class="product-description">
           {{{product.description}}}
         </div>
 
         <!-- Variants (if multiple) -->
         {{#if product.variants.length}}
           {{#if (gt product.variants.length 1)}}
-            <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Options</label>
-              <select id="variant-select" name="variantId"
-                      class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
+            <div style="margin-bottom:1.5rem;">
+              <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Options</label>
+              <select id="variant-select" name="variantId" class="variant-select">
                 {{#each product.variants}}
                   <option value="{{this.id}}"
                           data-price="{{money this.price}}"
@@ -90,24 +88,19 @@
         <form hx-post="/{{store.cartSlug}}/add"
               hx-target="#cart-count"
               hx-swap="outerHTML"
-              hx-indicator="#add-spinner"
-              class="space-y-3">
+              hx-indicator="#add-spinner">
           {{csrf_field}}
           <input type="hidden" name="variantId" value="{{product.variants.0.id}}">
 
-          <div class="flex gap-3">
-            <div class="w-24">
-              <label class="sr-only">Quantity</label>
-              <input type="number" name="quantity" value="1" min="1"
-                     class="w-full border border-gray-200 rounded-lg px-3 py-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-gray-300">
-            </div>
+          <div class="add-to-cart">
+            <label class="sr-only">Quantity</label>
+            <input type="number" name="quantity" value="1" min="1" class="qty-input">
             <button type="submit"
                     {{#unless product.available}}disabled{{/unless}}
-                    class="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold rounded-lg transition-all
-                           {{#if product.available}}text-white hover:opacity-90{{else}}bg-gray-100 text-gray-400 cursor-not-allowed{{/if}}"
-                    style="{{#if product.available}}background:var(--color-primary){{/if}}">
+                    class="btn btn-block"
+                    style="{{#if product.available}}background:var(--color-primary);color:#fff;{{else}}background:#f3f4f6;color:#9ca3af;cursor:not-allowed;{{/if}}">
               <span id="add-spinner" class="htmx-indicator">
-                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <svg style="width:1rem;height:1rem;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-dashoffset="12"/>
                 </svg>
               </span>
@@ -117,12 +110,16 @@
         </form>
 
         <!-- Meta -->
-        <div class="mt-8 pt-8 border-t border-gray-100 space-y-2 text-sm text-gray-500">
+        <div class="product-meta-section">
           {{#if product.vendor}}
-            <p>Vendor: <span class="text-gray-700">{{product.vendor}}</span></p>
+            <p>Vendor: <span style="color:#374151;">{{product.vendor}}</span></p>
           {{/if}}
           {{#if product.tags.length}}
-            <p>Tags: {{#each product.tags}}<span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mr-1">{{this}}</span>{{/each}}</p>
+            <p>Tags:
+              {{#each product.tags}}
+                <span class="product-tag">{{this}}</span>
+              {{/each}}
+            </p>
           {{/if}}
         </div>
       </div>
@@ -130,9 +127,9 @@
 
     <!-- Related products -->
     {{#if product.relatedProducts.length}}
-      <section class="mt-24">
-        <h2 class="text-xl font-bold text-gray-900 mb-8">You may also like</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section style="margin-top:6rem;">
+        <h2 style="font-size:1.25rem;font-weight:700;color:#111827;margin-bottom:2rem;">You may also like</h2>
+        <div class="product-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
           {{#each product.relatedProducts}}
             {{> product-card}}
           {{/each}}

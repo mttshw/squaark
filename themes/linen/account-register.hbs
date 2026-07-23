@@ -1,52 +1,46 @@
 {{> header}}
 
-<div class="max-w-md mx-auto px-4 py-16">
-  <h1 class="text-2xl font-bold text-gray-900 mb-2">Create account</h1>
-  <p class="text-sm text-gray-500 mb-8">Track your orders and save your details.</p>
+<div class="container--narrow auth-page">
+  <h1 class="auth-title">Create account</h1>
+  <p style="font-size:0.875rem;color:#6b7280;margin-bottom:2rem;">Track your orders and save your details.</p>
 
   {{#if error}}
-  <div class="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-    {{#if (eq error 'email_taken')}}An account with that email already exists. <a href="/account/login" class="underline">Sign in instead.</a>{{/if}}
+  <div class="auth-error">
+    {{#if (eq error 'email_taken')}}An account with that email already exists. <a href="/account/login">Sign in instead.</a>{{/if}}
     {{#if (eq error 'missing_fields')}}Please fill in all required fields.{{/if}}
     {{#if (eq error 'password_too_short')}}Password must be at least 8 characters.{{/if}}
   </div>
   {{/if}}
 
-  <form method="POST" action="/account/register" class="space-y-4">
+  <form method="POST" action="/account/register" class="auth-form">
     {{csrf_field}}
-    <div class="grid grid-cols-2 gap-3">
+    <div class="auth-form-row">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">First name</label>
-        <input type="text" name="first_name" required autocomplete="given-name"
-          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <label class="store-label">First name</label>
+        <input type="text" name="first_name" required autocomplete="given-name" class="store-input">
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Last name</label>
-        <input type="text" name="last_name" autocomplete="family-name"
-          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <label class="store-label">Last name</label>
+        <input type="text" name="last_name" autocomplete="family-name" class="store-input">
       </div>
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-      <input type="email" name="email" required autocomplete="email"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+      <label class="store-label">Email</label>
+      <input type="email" name="email" required autocomplete="email" class="store-input">
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-      <input type="password" name="password" required minlength="8" autocomplete="new-password"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      <p class="text-xs text-gray-400 mt-1">Minimum 8 characters</p>
+      <label class="store-label">Password</label>
+      <input type="password" name="password" required minlength="8" autocomplete="new-password" class="store-input">
+      <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.25rem;">Minimum 8 characters</p>
     </div>
-    <button type="submit"
-      class="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-lg hover:opacity-90 transition-opacity"
-      style="background: var(--color-primary)">
+    <button type="submit" class="btn btn-block" style="background:var(--color-primary);color:#fff;justify-content:center;">
       Create account
     </button>
   </form>
 
-  <p class="text-sm text-gray-500 text-center mt-6">
+  <p style="font-size:0.875rem;color:#6b7280;text-align:center;margin-top:1.5rem;">
     Already have an account?
-    <a href="/account/login" class="font-medium text-gray-900 hover:underline">Sign in</a>
+    <a href="/account/login" style="font-weight:500;color:#111827;">Sign in</a>
   </p>
 </div>
 

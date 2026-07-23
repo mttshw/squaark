@@ -1,10 +1,12 @@
-<div class="mb-6">
-  <h1 class="text-2xl font-bold">Import</h1>
-  <p class="text-sm text-gray-500 mt-1">Bring products, categories, images, orders and pages in from an existing WooCommerce store.</p>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Import</h1>
+    <p class="text-sm text-muted" style="margin-top:0.25rem;">Bring products, categories, images, orders and pages in from an existing WooCommerce store.</p>
+  </div>
 </div>
 
 {{#if error}}
-<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+<div class="alert alert-error">
   {{#if (eq error 'no_file')}}Please choose a file to upload.{{/if}}
   {{#if (eq error 'missing_fields')}}Store URL, consumer key and consumer secret are all required.{{/if}}
 </div>
@@ -14,97 +16,97 @@
 {{> import-job job=activeJob}}
 {{/if}}
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid-2">
   <!-- WordPress export file -->
-  <div class="bg-white rounded-xl border border-gray-200 p-5">
-    <h2 class="font-semibold mb-1">WordPress export file</h2>
-    <p class="text-xs text-gray-400 mb-4">
-      In your WooCommerce site: <strong>Tools → Export → All content</strong>, download the XML file, upload it here.
-      No API keys needed. Imports products, variants, images, categories and pages.
-    </p>
-    <form method="POST" action="/admin/import/wxr" enctype="multipart/form-data" class="space-y-3">
-      <input type="file" name="file" accept=".xml" required
-        class="w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-      <button type="submit" class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-        Upload &amp; import
-      </button>
+  <div class="card--no-overflow card-body stack-sm">
+    <div>
+      <h2 class="font-semibold">WordPress export file</h2>
+      <p class="text-xs text-muted mt-1">
+        In your WooCommerce site: <strong>Tools → Export → All content</strong>, download the XML file, upload it here.
+        No API keys needed. Imports products, variants, images, categories and pages.
+      </p>
+    </div>
+    <form method="POST" action="/admin/import/wxr" enctype="multipart/form-data" class="stack-sm">
+      <input type="file" name="file" accept=".xml" required class="form-file">
+      <div>
+        <button type="submit" class="btn btn-primary">Upload &amp; import</button>
+      </div>
     </form>
   </div>
 
   <!-- WooCommerce REST API -->
-  <div class="bg-white rounded-xl border border-gray-200 p-5">
-    <h2 class="font-semibold mb-1">WooCommerce REST API</h2>
-    <p class="text-xs text-gray-400 mb-4">
-      In your WooCommerce site: <strong>Settings → Advanced → REST API → Add key</strong> (read access is enough).
-      Required for orders — WooCommerce doesn't include those in a WordPress export.
-    </p>
-    <form method="POST" action="/admin/import/woocommerce" class="space-y-3">
+  <div class="card--no-overflow card-body stack-sm">
+    <div>
+      <h2 class="font-semibold">WooCommerce REST API</h2>
+      <p class="text-xs text-muted mt-1">
+        In your WooCommerce site: <strong>Settings → Advanced → REST API → Add key</strong> (read access is enough).
+        Required for orders — WooCommerce doesn't include those in a WordPress export.
+      </p>
+    </div>
+    <form method="POST" action="/admin/import/woocommerce" class="stack-sm">
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Store URL</label>
-        <input type="url" name="store_url" placeholder="https://oldstore.com" required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <label class="form-label-xs">Store URL</label>
+        <input type="url" name="store_url" placeholder="https://oldstore.com" required class="form-input">
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Consumer key</label>
-        <input type="text" name="consumer_key" placeholder="ck_..." required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <label class="form-label-xs">Consumer key</label>
+        <input type="text" name="consumer_key" placeholder="ck_..." required class="form-input font-mono">
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-700 mb-1">Consumer secret</label>
-        <input type="password" name="consumer_secret" placeholder="cs_..." required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900">
+        <label class="form-label-xs">Consumer secret</label>
+        <input type="password" name="consumer_secret" placeholder="cs_..." required class="form-input font-mono">
       </div>
-      <div class="flex flex-wrap gap-4 pt-1">
-        <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
-          <input type="checkbox" name="import_products" value="on" checked class="rounded">
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;padding-top:0.25rem;">
+        <label class="form-check">
+          <input type="checkbox" name="import_products" value="on" checked>
           Products &amp; categories
         </label>
-        <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
-          <input type="checkbox" name="import_orders" value="on" checked class="rounded">
+        <label class="form-check">
+          <input type="checkbox" name="import_orders" value="on" checked>
           Past orders
         </label>
-        <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
-          <input type="checkbox" name="import_pages" value="on" checked class="rounded">
+        <label class="form-check">
+          <input type="checkbox" name="import_pages" value="on" checked>
           Pages
         </label>
       </div>
-      <p class="text-xs text-gray-400">Pages require WP core REST API access — works with WC keys if the user has editor permissions.</p>
-      <button type="submit" class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-        Connect &amp; import
-      </button>
+      <p class="text-xs text-muted">Pages require WP core REST API access — works with WC keys if the user has editor permissions.</p>
+      <div>
+        <button type="submit" class="btn btn-primary">Connect &amp; import</button>
+      </div>
     </form>
   </div>
 </div>
 
-<p class="text-xs text-gray-400 mt-4">
+<p class="text-xs text-muted mt-4">
   Re-running an import updates existing records instead of duplicating them (matched by original WooCommerce ID).
   Imported orders are record-only — payment details aren't carried over.
   Pages are imported as HTML content; they'll be served from <code>/{slug}</code>.
 </p>
 
 {{#if jobs.length}}
-<div class="bg-white rounded-xl border border-gray-200 p-5 mt-6">
+<div class="card--no-overflow card-body mt-6">
   <h2 class="font-semibold mb-3">Recent imports</h2>
-  <table class="w-full text-sm">
+  <table class="data-table">
     <thead>
-      <tr class="text-gray-400 text-xs">
-        <th class="text-left py-1.5 font-medium">Source</th>
-        <th class="text-left py-1.5 font-medium">Status</th>
-        <th class="text-left py-1.5 font-medium">Result</th>
-        <th class="text-left py-1.5 font-medium">When</th>
+      <tr>
+        <th>Source</th>
+        <th>Status</th>
+        <th>Result</th>
+        <th>When</th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-gray-100">
+    <tbody>
       {{#each jobs}}
       <tr>
-        <td class="py-1.5">{{this.source}}</td>
-        <td class="py-1.5">
-          {{#if (eq this.status 'completed')}}<span class="text-green-600 text-xs font-medium">Completed</span>{{/if}}
-          {{#if (eq this.status 'failed')}}<span class="text-red-600 text-xs font-medium">Failed</span>{{/if}}
-          {{#if (eq this.status 'running')}}<span class="text-blue-600 text-xs font-medium">Running</span>{{/if}}
+        <td>{{this.source}}</td>
+        <td>
+          {{#if (eq this.status 'completed')}}<span class="text-xs font-medium" style="color:#16a34a;">Completed</span>{{/if}}
+          {{#if (eq this.status 'failed')}}<span class="text-xs font-medium" style="color:#dc2626;">Failed</span>{{/if}}
+          {{#if (eq this.status 'running')}}<span class="text-xs font-medium" style="color:#2563eb;">Running</span>{{/if}}
         </td>
-        <td class="py-1.5 text-gray-500">{{this.stage}}</td>
-        <td class="py-1.5 text-gray-400 text-xs">{{date_short this.created_at}}</td>
+        <td class="text-muted">{{this.stage}}</td>
+        <td class="text-muted text-xs">{{date_short this.created_at}}</td>
       </tr>
       {{/each}}
     </tbody>

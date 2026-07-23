@@ -47,10 +47,6 @@ The dashboard shows basic traffic analytics (page views, unique visitors, top pa
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm run db:migrate` | Apply pending migrations manually |
 | `npm run db:seed` | Seed with sample products/collections |
-| `npm run css:build` | Rebuild the linen theme's Tailwind CSS |
-| `npm run css:watch` | Rebuild on change |
-
-The `css:*` scripts are only needed if you're editing the bundled theme. `themes/linen/assets/style.css` is already built.
 
 ## Configuration
 

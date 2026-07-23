@@ -1,73 +1,64 @@
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold">Navigation</h1>
+<div class="page-header">
+  <h1 class="page-title">Navigation</h1>
 </div>
 
-{{#if saved}}<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Saved.</div>{{/if}}
+{{#if saved}}<div class="alert alert-success">Saved.</div>{{/if}}
 
 <form method="POST" action="/admin/navigation">
 
-  <div class="grid grid-cols-2 gap-6 mb-6">
+  <div class="grid-2 mb-6">
 
     <!-- Header nav -->
-    <div class="bg-white rounded-xl border border-gray-200 p-5"
+    <div class="card--no-overflow card-body"
          x-data="navEditor()"
          x-init="init($el.dataset.items)"
          data-items='{{mainNavSafe}}'>
       <h2 class="font-semibold mb-4">Header navigation</h2>
-      <div class="space-y-2 mb-3">
+      <div class="stack-xs mb-3">
         <template x-for="(item, i) in items" :key="i">
-          <div class="flex items-center gap-2">
-            <input x-model="item.label" placeholder="Label" type="text"
-              class="w-28 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <input x-model="item.url" placeholder="URL e.g. /about" type="text"
-              class="flex-1 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          <div class="row">
+            <input x-model="item.label" placeholder="Label" type="text" class="form-input" style="width:7rem;">
+            <input x-model="item.url" placeholder="URL e.g. /about" type="text" class="form-input flex-1">
             <button type="button" @click="moveUp(i)" :disabled="i === 0"
-              class="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move up">↑</button>
+              style="padding:0.25rem;color:#9ca3af;" title="Move up">↑</button>
             <button type="button" @click="moveDown(i)" :disabled="i === items.length - 1"
-              class="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move down">↓</button>
+              style="padding:0.25rem;color:#9ca3af;" title="Move down">↓</button>
             <button type="button" @click="items.splice(i, 1)"
-              class="p-1 text-gray-400 hover:text-red-600" title="Remove">✕</button>
+              style="padding:0.25rem;color:#9ca3af;" title="Remove">✕</button>
           </div>
         </template>
       </div>
-      <button type="button" @click="items.push({label:'',url:''})"
-        class="text-sm text-gray-500 hover:text-gray-900">+ Add link</button>
+      <button type="button" @click="items.push({label:'',url:''})" class="btn-link text-sm">+ Add link</button>
       <input type="hidden" name="nav_main" :value="JSON.stringify(items)">
     </div>
 
     <!-- Footer nav -->
-    <div class="bg-white rounded-xl border border-gray-200 p-5"
+    <div class="card--no-overflow card-body"
          x-data="navEditor()"
          x-init="init($el.dataset.items)"
          data-items='{{footerNavSafe}}'>
       <h2 class="font-semibold mb-4">Footer navigation</h2>
-      <div class="space-y-2 mb-3">
+      <div class="stack-xs mb-3">
         <template x-for="(item, i) in items" :key="i">
-          <div class="flex items-center gap-2">
-            <input x-model="item.label" placeholder="Label" type="text"
-              class="w-28 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-            <input x-model="item.url" placeholder="URL e.g. /about" type="text"
-              class="flex-1 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          <div class="row">
+            <input x-model="item.label" placeholder="Label" type="text" class="form-input" style="width:7rem;">
+            <input x-model="item.url" placeholder="URL e.g. /about" type="text" class="form-input flex-1">
             <button type="button" @click="moveUp(i)" :disabled="i === 0"
-              class="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move up">↑</button>
+              style="padding:0.25rem;color:#9ca3af;" title="Move up">↑</button>
             <button type="button" @click="moveDown(i)" :disabled="i === items.length - 1"
-              class="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move down">↓</button>
+              style="padding:0.25rem;color:#9ca3af;" title="Move down">↓</button>
             <button type="button" @click="items.splice(i, 1)"
-              class="p-1 text-gray-400 hover:text-red-600" title="Remove">✕</button>
+              style="padding:0.25rem;color:#9ca3af;" title="Remove">✕</button>
           </div>
         </template>
       </div>
-      <button type="button" @click="items.push({label:'',url:''})"
-        class="text-sm text-gray-500 hover:text-gray-900">+ Add link</button>
+      <button type="button" @click="items.push({label:'',url:''})" class="btn-link text-sm">+ Add link</button>
       <input type="hidden" name="nav_footer" :value="JSON.stringify(items)">
     </div>
 
   </div>
 
-  <button type="submit"
-    class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-    Save navigation
-  </button>
+  <button type="submit" class="btn btn-primary">Save navigation</button>
 
 </form>
 

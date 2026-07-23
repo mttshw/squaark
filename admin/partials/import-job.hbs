@@ -1,29 +1,29 @@
 {{#if job}}
-<div id="import-job" class="bg-white rounded-xl border border-gray-200 p-5 mb-6"
+<div id="import-job" class="card--no-overflow card-body mb-6"
   {{#if (eq job.status 'running')}}
   hx-get="/admin/import/jobs/{{job.id}}" hx-trigger="every 1.5s" hx-swap="outerHTML"
   {{/if}}>
-  <div class="flex items-center justify-between mb-2">
+  <div class="row-between mb-2">
     <h2 class="font-semibold">
       {{#if (eq job.status 'running')}}Importing...{{/if}}
       {{#if (eq job.status 'completed')}}Import complete{{/if}}
       {{#if (eq job.status 'failed')}}Import failed{{/if}}
     </h2>
-    <span class="text-xs text-gray-400">{{job.source}}</span>
+    <span class="text-xs text-muted">{{job.source}}</span>
   </div>
-  <p class="text-sm text-gray-600 mb-3">{{job.stage}}</p>
+  <p class="text-sm text-muted mb-3">{{job.stage}}</p>
 
   {{#if (gt job.total 0)}}
-  <div class="w-full bg-gray-100 rounded-full h-2 mb-3 overflow-hidden">
-    <div class="bg-gray-900 h-2 rounded-full" style="width: {{percent job.processed job.total}}%"></div>
+  <div class="progress-bar mb-3">
+    <div class="progress-bar__fill" style="width: {{percent job.processed job.total}}%"></div>
   </div>
-  <p class="text-xs text-gray-400 mb-3">{{job.processed}} / {{job.total}}</p>
+  <p class="text-xs text-muted mb-3">{{job.processed}} / {{job.total}}</p>
   {{/if}}
 
   {{#if (jsonNonEmpty job.errors)}}
-  <details class="text-xs text-amber-700">
-    <summary class="cursor-pointer font-medium">{{jsonLength job.errors}} item(s) had problems</summary>
-    <ul class="mt-2 space-y-1 max-h-40 overflow-y-auto">
+  <details style="font-size:0.75rem;color:#92400e;">
+    <summary style="cursor:pointer;font-weight:500;">{{jsonLength job.errors}} item(s) had problems</summary>
+    <ul style="margin-top:0.5rem;max-height:10rem;overflow-y:auto;" class="stack-xs">
       {{#each (parseJson job.errors)}}
       <li><span class="font-medium">{{this.item}}</span> — {{this.message}}</li>
       {{/each}}

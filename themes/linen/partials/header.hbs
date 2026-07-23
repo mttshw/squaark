@@ -13,110 +13,88 @@
   {{/if}}
   <link rel="stylesheet" href="{{asset 'style.css'}}">
   {{{cssVars}}}
-  <!-- Tailwind CDN for dev — replace with compiled CSS for production -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: 'var(--color-primary)',
-            accent:  'var(--color-accent)',
-            background: 'var(--color-background)',
-          },
-          fontFamily: { heading: ['var(--font-heading)'] }
-        }
-      }
-    }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="text-gray-900 font-[Inter,sans-serif] antialiased" style="background:var(--color-background)">
+<body>
 
-<header class="border-b border-gray-100 sticky top-0 backdrop-blur-sm z-50" style="background:var(--color-header, var(--color-background, #fff))">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
+<header class="site-header">
+  <div class="site-header__inner">
 
-      <!-- Logo / Store name -->
-      <a href="/" class="flex items-center gap-2 font-bold text-xl tracking-tight">
-        {{#if store.logo}}
-          <img src="{{store.logo}}" alt="{{store.name}}" class="h-8 w-auto">
+    <!-- Logo / Store name -->
+    <a href="/" class="site-header__logo">
+      {{#if store.logo}}
+        <img src="{{store.logo}}" alt="{{store.name}}" style="height:2rem;width:auto;">
+      {{else}}
+        <span>{{store.name}}</span>
+      {{/if}}
+    </a>
+
+    <!-- Main navigation -->
+    <nav class="header-nav">
+      {{#each navigation.main}}
+        <a href="{{this.url}}" class="{{#is this.url ../currentPath}}active{{/is}}">{{this.label}}</a>
+      {{/each}}
+    </nav>
+
+    <!-- Right actions -->
+    <div class="header-actions">
+
+      <!-- Account -->
+      {{#if store.customerAccountsEnabled}}
+      <a href="/account" class="header-icon" aria-label="{{#if customer.loggedIn}}My account{{else}}Sign in{{/if}}">
+        {{#if customer.loggedIn}}
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/>
+        </svg>
         {{else}}
-          <span style="color:var(--color-header-text, #111827)">{{store.name}}</span>
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z"/>
+        </svg>
         {{/if}}
       </a>
+      {{/if}}
 
-      <!-- Main navigation -->
-      <nav class="hidden md:flex items-center gap-8" style="color:var(--color-header-text, #111827)">
-        {{#each navigation.main}}
-          <a href="{{this.url}}"
-             class="text-sm font-medium transition-opacity {{#is this.url ../currentPath}}opacity-100{{else}}opacity-60 hover:opacity-100{{/is}}">
-            {{this.label}}
-          </a>
-        {{/each}}
-      </nav>
+      <!-- Search -->
+      <a href="/search" class="header-icon" aria-label="Search">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+        </svg>
+      </a>
 
-      <!-- Right actions -->
-      <div class="flex items-center gap-4" style="color:var(--color-header-text, #111827)">
+      <!-- Cart -->
+      <a href="/{{store.cartSlug}}" class="header-icon" style="position:relative;" aria-label="{{store.cartLabel}}">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/>
+        </svg>
+        <span id="cart-count" class="cart-badge"
+              style="{{#unless cart.itemCount}}display:none{{/unless}}">
+          {{cart.itemCount}}
+        </span>
+      </a>
 
-        <!-- Account -->
-        {{#if store.customerAccountsEnabled}}
-        <a href="/account" class="transition-opacity opacity-60 hover:opacity-100" aria-label="{{#if customer.loggedIn}}My account{{else}}Sign in{{/if}}">
-          {{#if customer.loggedIn}}
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/>
-          </svg>
-          {{else}}
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z"/>
-          </svg>
-          {{/if}}
-        </a>
-        {{/if}}
+      <!-- Mobile menu toggle -->
+      <button class="mobile-menu-btn" x-data @click="$dispatch('toggle-menu')" aria-label="Menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
 
-        <!-- Search -->
-        <a href="/search" class="transition-opacity opacity-60 hover:opacity-100" aria-label="Search">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-          </svg>
-        </a>
-
-        <!-- Cart -->
-        <a href="/{{store.cartSlug}}" class="relative transition-opacity opacity-60 hover:opacity-100" aria-label="{{store.cartLabel}}">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/>
-          </svg>
-          <span id="cart-count"
-                class="cart-count absolute -top-2 -right-2 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none"
-                style="background:var(--color-accent);{{#unless cart.itemCount}}display:none{{/unless}}">
-            {{cart.itemCount}}
-          </span>
-        </a>
-
-        <!-- Mobile menu toggle -->
-        <button class="md:hidden transition-opacity opacity-60 hover:opacity-100" x-data @click="$dispatch('toggle-menu')" aria-label="Menu">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
-
-      </div>
     </div>
   </div>
 
   <!-- Mobile nav -->
-  <div class="md:hidden border-t border-gray-100" x-data="{ open: false }" @toggle-menu.window="open = !open" x-show="open" x-cloak>
-    <nav class="px-4 py-3 flex flex-col gap-3" style="color:var(--color-header-text, #111827)">
+  <div class="mobile-nav" x-data="{ open: false }" @toggle-menu.window="open = !open" x-show="open" x-cloak>
+    <div class="mobile-nav__inner">
       {{#each navigation.main}}
-        <a href="{{this.url}}" class="text-sm font-medium opacity-70 hover:opacity-100 transition-opacity">{{this.label}}</a>
+        <a href="{{this.url}}">{{this.label}}</a>
       {{/each}}
-    </nav>
+    </div>
   </div>
 </header>
 

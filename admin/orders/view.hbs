@@ -1,54 +1,52 @@
-<div class="flex items-center gap-3 mb-6">
-  <a href="/admin/orders" class="text-gray-400 hover:text-gray-600 text-sm">← Orders</a>
-  <h1 class="text-2xl font-bold">Order #{{order.order_number}}</h1>
+<div class="page-header__left mb-6">
+  <a href="/admin/orders" class="page-back">← Orders</a>
+  <h1 class="page-title">Order #{{order.order_number}}</h1>
   {{{status_badge order.status}}}
 </div>
 
-<div class="grid grid-cols-3 gap-6">
-  <div class="col-span-2 space-y-5">
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
-        <h2 class="font-semibold text-sm">Items</h2>
-      </div>
-      <table class="w-full text-sm">
-        <tbody class="divide-y divide-gray-100">
+<div class="grid-form">
+  <div class="stack">
+    <div class="card">
+      <div class="card-header">Items</div>
+      <table class="data-table">
+        <tbody>
           {{#each items}}
           <tr>
-            <td class="px-5 py-3">
-              <p class="font-medium">{{this.product_title}}</p>
-              <p class="text-xs text-gray-400">{{this.variant_title}}{{#if this.sku}} · SKU: {{this.sku}}{{/if}}</p>
+            <td>
+              <p class="cell-title">{{this.product_title}}</p>
+              <p class="cell-hint">{{this.variant_title}}{{#if this.sku}} · SKU: {{this.sku}}{{/if}}</p>
             </td>
-            <td class="px-5 py-3 text-gray-500 text-right">× {{this.quantity}}</td>
-            <td class="px-5 py-3 text-right font-medium">£{{money_pence this.line_total}}</td>
+            <td class="right text-muted">× {{this.quantity}}</td>
+            <td class="right cell-title">£{{money_pence this.line_total}}</td>
           </tr>
           {{/each}}
         </tbody>
-        <tfoot class="border-t border-gray-200 bg-gray-50">
+        <tfoot>
           <tr>
-            <td colspan="2" class="px-5 py-2 text-sm text-gray-500">Subtotal</td>
-            <td class="px-5 py-2 text-right text-sm">£{{money_pence order.subtotal}}</td>
+            <td colspan="2">Subtotal</td>
+            <td class="right">£{{money_pence order.subtotal}}</td>
           </tr>
           {{#if order.discount_amount}}
           <tr>
-            <td colspan="2" class="px-5 py-2 text-sm text-gray-500">Discount{{#if order.discount_code}} ({{order.discount_code}}){{/if}}</td>
-            <td class="px-5 py-2 text-right text-sm text-green-600">−£{{money_pence order.discount_amount}}</td>
+            <td colspan="2">Discount{{#if order.discount_code}} ({{order.discount_code}}){{/if}}</td>
+            <td class="right text-success">−£{{money_pence order.discount_amount}}</td>
           </tr>
           {{/if}}
           <tr>
-            <td colspan="2" class="px-5 py-3 font-semibold">Total</td>
-            <td class="px-5 py-3 text-right font-bold">£{{money_pence order.total}}</td>
+            <td colspan="2" class="font-semibold">Total</td>
+            <td class="right font-semibold">£{{money_pence order.total}}</td>
           </tr>
         </tfoot>
       </table>
     </div>
   </div>
 
-  <div class="space-y-4">
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
+  <div class="stack-sm">
+    <div class="card--no-overflow card-body">
       <h2 class="font-semibold text-sm mb-3">Customer</h2>
       <p class="text-sm">{{order.email}}</p>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 text-xs text-gray-400 space-y-1">
+    <div class="card--no-overflow card-body-sm text-xs text-muted stack-xs">
       <p>Placed {{date_short order.created_at}}</p>
       <p>Fulfillment: {{order.fulfillment}}</p>
     </div>

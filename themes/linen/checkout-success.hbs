@@ -1,34 +1,35 @@
 {{> header}}
 
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-  <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6" style="background:var(--color-accent)">
-    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="container--narrow success-page">
+
+  <div class="success-icon">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
     </svg>
   </div>
 
-  <h1 class="text-2xl font-bold text-gray-900 mb-2">Order confirmed</h1>
-  <p class="text-gray-500 mb-1">Order <span class="font-medium text-gray-700">#{{order.order_number}}</span></p>
-  <p class="text-sm text-gray-400 mb-10">A confirmation has been sent to <span class="text-gray-600">{{order.email}}</span></p>
+  <h1 style="font-size:1.5rem;font-weight:700;color:#111827;margin-bottom:0.5rem;">Order confirmed</h1>
+  <p style="color:#6b7280;margin-bottom:0.25rem;">Order <span style="font-weight:500;color:#374151;">#{{order.order_number}}</span></p>
+  <p style="font-size:0.875rem;color:#9ca3af;margin-bottom:2.5rem;">A confirmation has been sent to <span style="color:#4b5563;">{{order.email}}</span></p>
 
   <!-- Items -->
-  <div class="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left mb-6">
-    <h2 class="font-semibold text-gray-900 mb-4 text-sm">Items ordered</h2>
-    <div class="divide-y divide-gray-100">
+  <div class="success-card">
+    <h2 class="success-card__title">Items ordered</h2>
+    <div class="success-items">
       {{#each order.items}}
-        <div class="py-3 flex justify-between items-center gap-4">
+        <div class="success-item">
           <div>
-            <p class="text-sm font-medium text-gray-900">{{this.product_title}}</p>
+            <p class="success-item__title">{{this.product_title}}</p>
             {{#unless (is this.variant_title "Default")}}
-              <p class="text-xs text-gray-400">{{this.variant_title}}</p>
+              <p class="success-item__variant">{{this.variant_title}}</p>
             {{/unless}}
-            <p class="text-xs text-gray-500">Qty {{this.quantity}}</p>
+            <p class="success-item__qty">Qty {{this.quantity}}</p>
           </div>
-          <p class="text-sm font-medium text-gray-900 flex-shrink-0">{{money this.line_total}}</p>
+          <p class="success-item__price">{{money this.line_total}}</p>
         </div>
       {{/each}}
     </div>
-    <div class="border-t border-gray-200 mt-4 pt-4 flex justify-between font-bold text-gray-900 text-sm">
+    <div class="success-total">
       <span>Total</span>
       <span>{{money order.total}}</span>
     </div>
@@ -36,9 +37,9 @@
 
   <!-- Shipping address -->
   {{#if order.shippingAddress.line1}}
-    <div class="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left mb-10">
-      <h2 class="font-semibold text-gray-900 mb-3 text-sm">Shipping to</h2>
-      <address class="not-italic text-sm text-gray-600 leading-relaxed">
+    <div class="success-card">
+      <h2 class="success-card__title">Shipping to</h2>
+      <address class="success-address">
         {{order.shippingAddress.firstName}} {{order.shippingAddress.lastName}}<br>
         {{order.shippingAddress.line1}}<br>
         {{#if order.shippingAddress.line2}}{{order.shippingAddress.line2}}<br>{{/if}}
@@ -50,32 +51,25 @@
   {{/if}}
 
   {{#if canCreateAccount}}
-  <div class="bg-gray-50 rounded-2xl border border-gray-100 p-6 text-left mb-6">
-    <h2 class="font-semibold text-gray-900 mb-1 text-sm">Save your details</h2>
-    <p class="text-sm text-gray-500 mb-4">Set a password to track this order and any future purchases from your account.</p>
-    <form method="POST" action="/checkout/create-account" class="flex gap-3">
+  <div class="success-card">
+    <h2 class="success-card__title">Save your details</h2>
+    <p style="font-size:0.875rem;color:#6b7280;margin-bottom:1rem;">Set a password to track this order and any future purchases from your account.</p>
+    <form method="POST" action="/checkout/create-account" class="account-prompt-form">
       {{csrf_field}}
       <input type="hidden" name="orderId" value="{{orderId}}">
-      <input type="password" name="password" placeholder="Choose a password (8+ chars)" minlength="8" required
-        class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-      <button type="submit"
-        class="px-5 py-2.5 text-sm font-semibold text-white rounded-lg hover:opacity-90 transition-opacity flex-shrink-0"
-        style="background:var(--color-primary)">
-        Create account
-      </button>
+      <input type="password" name="password" placeholder="Choose a password (8+ chars)" minlength="8" required class="store-input" style="flex:1;">
+      <button type="submit" class="btn btn-primary shrink-0" style="background:var(--color-primary);">Create account</button>
     </form>
   </div>
   {{/if}}
 
   {{#if accountCreated}}
-  <div class="mb-6 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
-    Account created — you can now <a href="/account/orders" class="underline font-medium">view your orders</a>.
+  <div class="account-created-notice">
+    Account created — you can now <a href="/account/orders">view your orders</a>.
   </div>
   {{/if}}
 
-  <a href="/collections/all"
-     class="inline-block px-8 py-3 text-sm font-semibold text-white rounded-xl hover:opacity-90 transition-all"
-     style="background:var(--color-primary)">
+  <a href="/collections/all" class="btn btn-primary" style="display:inline-block;background:var(--color-primary);">
     Continue Shopping
   </a>
 </div>

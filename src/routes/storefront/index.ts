@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ThemeRegistry } from '../../theme/registry';
 import { buildGlobalContext } from '../../theme/context';
-import { getProduct } from '../../commerce/products';
+import { getProduct, searchProducts } from '../../commerce/products';
 import { getCollectionPage, listFeaturedProducts } from '../../commerce/collections';
 import { getCartSummary, getCartPage, addToCart, updateCartItem, removeFromCart } from '../../commerce/cart';
 import { findPageBySlug } from '../../db/queries/pages';
@@ -129,8 +129,11 @@ export async function storefrontRoutes(fastify: FastifyInstance, registry: Theme
 
   fastify.get('/search', async (req, reply) => {
     const { q = '' } = req.query as { q?: string };
-    const ctx = await base(req, reply, '/search', registry);
-    await render(registry, reply, 'search', { ...ctx, pageTitle: 'Search', query: q, products: [] });
+    const [ctx, products] = await Promise.all([
+      base(req, reply, '/search', registry),
+      q.trim() ? searchProducts(q.trim()) : Promise.resolve([]),
+    ]);
+    await render(registry, reply, 'search', { ...ctx, pageTitle: 'Search', query: q, products });
   });
 
   // Catch-all page lookup — registered last so all specific routes take priority

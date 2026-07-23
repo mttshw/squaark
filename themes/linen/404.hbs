@@ -1,19 +1,12 @@
 {{> header}}
 
-  <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-    <p class="text-8xl font-black text-gray-100 select-none mb-4" aria-hidden="true">404</p>
-    <h1 class="text-2xl font-bold text-gray-900 mb-3">Page not found</h1>
-    <p class="text-gray-500 mb-10">The page you're looking for doesn't exist or has been moved.</p>
-    <div class="flex items-center justify-center gap-4">
-      <a href="/"
-         class="px-6 py-3 text-sm font-semibold text-white rounded-lg hover:opacity-90 transition-all"
-         style="background:var(--color-primary)">
-        Go home
-      </a>
-      <a href="/collections/all"
-         class="px-6 py-3 text-sm font-semibold rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all">
-        Browse products
-      </a>
+  <div class="container not-found-page">
+    <p class="not-found__big" aria-hidden="true">404</p>
+    <h1 class="not-found__title">Page not found</h1>
+    <p class="not-found__body">The page you're looking for doesn't exist or has been moved.</p>
+    <div class="not-found__actions">
+      <a href="/" class="btn btn-primary" style="background:var(--color-primary);">Go home</a>
+      <a href="/collections/all" class="btn btn-outline">Browse products</a>
     </div>
   </div>
 

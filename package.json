@@ -7,9 +7,7 @@
     "start": "node dist/server.js",
     "build": "tsc && mkdir -p dist/db/migrations && cp src/db/migrations/*.sql dist/db/migrations/",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:seed": "tsx src/db/seed.ts",
-    "css:build": "tailwindcss -i themes/linen/assets/style.src.css -o themes/linen/assets/style.css --minify",
-    "css:watch": "tailwindcss -i themes/linen/assets/style.src.css -o themes/linen/assets/style.css --watch"
+    "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^9.3.1",
@@ -35,7 +33,6 @@
     "@types/node": "^20.14.0",
     "@types/nodemailer": "^8.0.1",
     "@types/sharp": "^0.31.1",
-    "tailwindcss": "^3.4.0",
     "tsx": "^4.15.0",
     "typescript": "^5.4.0"
   }

@@ -1,71 +1,62 @@
 {{> header}}
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-  <h1 class="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
+<div class="container py-12">
+  <h1 style="font-size:1.5rem;font-weight:700;color:#111827;margin-bottom:2rem;">Checkout</h1>
 
-  <div class="lg:grid lg:grid-cols-5 lg:gap-12">
+  <div class="checkout-layout">
 
     <!-- Address + payment form -->
-    <div class="lg:col-span-3 space-y-8">
+    <div class="checkout-fields">
 
       <!-- Contact -->
       <div>
-        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Contact</h2>
+        <h2 class="checkout-section-title">Contact</h2>
         <div>
-          <label class="block text-sm text-gray-600 mb-1">Email address</label>
-          <input type="email" id="email" name="email" required autocomplete="email"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+          <label class="store-label">Email address</label>
+          <input type="email" id="email" name="email" required autocomplete="email" class="store-input">
         </div>
       </div>
 
       <!-- Shipping address -->
       <div>
-        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Shipping address</h2>
-        <div class="space-y-3">
-          <div class="grid grid-cols-2 gap-3">
+        <h2 class="checkout-section-title">Shipping address</h2>
+        <div class="checkout-fields">
+          <div class="checkout-2col">
             <div>
-              <label class="block text-sm text-gray-600 mb-1">First name</label>
-              <input type="text" id="firstName" name="firstName" required autocomplete="given-name"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <label class="store-label">First name</label>
+              <input type="text" id="firstName" name="firstName" required autocomplete="given-name" class="store-input">
             </div>
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Last name</label>
-              <input type="text" id="lastName" name="lastName" required autocomplete="family-name"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <label class="store-label">Last name</label>
+              <input type="text" id="lastName" name="lastName" required autocomplete="family-name" class="store-input">
             </div>
           </div>
           <div>
-            <label class="block text-sm text-gray-600 mb-1">Address line 1</label>
-            <input type="text" id="line1" name="line1" required autocomplete="address-line1"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <label class="store-label">Address line 1</label>
+            <input type="text" id="line1" name="line1" required autocomplete="address-line1" class="store-input">
           </div>
           <div>
-            <label class="block text-sm text-gray-600 mb-1">Address line 2 <span class="text-gray-400">(optional)</span></label>
-            <input type="text" id="line2" name="line2" autocomplete="address-line2"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <label class="store-label">Address line 2 <span style="color:#9ca3af;">(optional)</span></label>
+            <input type="text" id="line2" name="line2" autocomplete="address-line2" class="store-input">
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="checkout-2col">
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Town / City</label>
-              <input type="text" id="city" name="city" required autocomplete="address-level2"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <label class="store-label">Town / City</label>
+              <input type="text" id="city" name="city" required autocomplete="address-level2" class="store-input">
             </div>
             <div>
-              <label class="block text-sm text-gray-600 mb-1">County <span class="text-gray-400">(optional)</span></label>
-              <input type="text" id="county" name="county" autocomplete="address-level1"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <label class="store-label">County <span style="color:#9ca3af;">(optional)</span></label>
+              <input type="text" id="county" name="county" autocomplete="address-level1" class="store-input">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="checkout-2col">
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Postcode</label>
-              <input type="text" id="postcode" name="postcode" required autocomplete="postal-code"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <label class="store-label">Postcode</label>
+              <input type="text" id="postcode" name="postcode" required autocomplete="postal-code" class="store-input">
             </div>
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Country</label>
-              <select id="country" name="country" required autocomplete="country"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+              <label class="store-label">Country</label>
+              <select id="country" name="country" required autocomplete="country" class="store-select">
                 <option value="GB" selected>United Kingdom</option>
                 <option value="US">United States</option>
                 <option value="AU">Australia</option>
@@ -82,21 +73,19 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm text-gray-600 mb-1">Phone <span class="text-gray-400">(optional)</span></label>
-            <input type="tel" id="phone" name="phone" autocomplete="tel"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <label class="store-label">Phone <span style="color:#9ca3af;">(optional)</span></label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" class="store-input">
           </div>
         </div>
       </div>
 
       <!-- Payment -->
       <div>
-        <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Payment</h2>
+        <h2 class="checkout-section-title">Payment</h2>
 
-        <div id="payment-error" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
+        <div id="payment-error" style="display:none;margin-bottom:1rem;" class="alert alert-error"></div>
 
         {{#if stripeEnabled}}
-          <!-- Stripe: standard form POST -->
           <form method="POST" action="/checkout" id="stripe-form">
             <input type="hidden" name="email" id="stripe-email">
             <input type="hidden" name="firstName" id="stripe-firstName">
@@ -109,8 +98,8 @@
             <input type="hidden" name="country" id="stripe-country">
             <input type="hidden" name="phone" id="stripe-phone">
             <button type="button" onclick="submitStripe()"
-              class="w-full py-3.5 px-6 text-sm font-semibold text-white rounded-xl hover:opacity-90 transition-all mb-3"
-              style="background:var(--color-accent)">
+              class="btn btn-block"
+              style="background:var(--color-accent);color:#fff;margin-bottom:0.75rem;justify-content:center;">
               Pay by Card
             </button>
           </form>
@@ -121,9 +110,9 @@
         {{/if}}
 
         {{#unless stripeEnabled}}{{#unless paypalEnabled}}
-          <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+          <div class="alert alert-warning">
             No payment methods are configured yet. Add Stripe or PayPal keys in
-            <a href="/admin/settings#payments" class="underline">Settings → Payments</a>.
+            <a href="/admin/settings#payments">Settings → Payments</a>.
           </div>
         {{/unless}}{{/unless}}
       </div>
@@ -131,46 +120,46 @@
     </div>
 
     <!-- Order summary -->
-    <div class="lg:col-span-2 mt-10 lg:mt-0">
-      <div class="rounded-2xl border border-gray-100 bg-gray-50 p-6 sticky top-24">
-        <h2 class="font-semibold text-gray-900 mb-5">Order summary</h2>
+    <div>
+      <div class="checkout-summary">
+        <h2 class="checkout-summary__title">Order summary</h2>
 
-        <div class="divide-y divide-gray-100 mb-5">
+        <div class="checkout-items">
           {{#each cart.items}}
-            <div class="py-3 flex gap-3 items-center">
-              <div class="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
-                <img src="{{this.image.thumbnail}}" alt="{{this.productTitle}}" class="w-full h-full object-cover">
+            <div class="checkout-item">
+              <div class="checkout-item__img">
+                <img src="{{this.image.thumbnail}}" alt="{{this.productTitle}}">
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">{{this.productTitle}}</p>
+              <div class="checkout-item__info">
+                <p class="checkout-item__title">{{this.productTitle}}</p>
                 {{#unless (is this.variantTitle "Default")}}
-                  <p class="text-xs text-gray-400">{{this.variantTitle}}</p>
+                  <p class="checkout-item__variant">{{this.variantTitle}}</p>
                 {{/unless}}
-                <p class="text-xs text-gray-500">Qty {{this.quantity}}</p>
+                <p class="checkout-item__qty">Qty {{this.quantity}}</p>
               </div>
-              <p class="text-sm font-medium text-gray-900 flex-shrink-0">{{money this.lineTotal}}</p>
+              <p class="checkout-item__price">{{money this.lineTotal}}</p>
             </div>
           {{/each}}
         </div>
 
-        <div class="space-y-2 text-sm border-t border-gray-200 pt-4">
-          <div class="flex justify-between text-gray-600">
+        <div class="summary-rows">
+          <div class="summary-row">
             <span>Subtotal</span>
             <span>{{money cart.subtotal}}</span>
           </div>
           {{#if cart.discountAmount}}
-            <div class="flex justify-between text-green-600">
+            <div class="summary-row summary-row--discount">
               <span>Discount ({{cart.discountCode}})</span>
               <span>-{{money cart.discountAmount}}</span>
             </div>
           {{/if}}
-          <div class="flex justify-between text-gray-500">
+          <div class="summary-row summary-row--muted">
             <span>Shipping</span>
             <span>Calculated at checkout</span>
           </div>
         </div>
 
-        <div class="border-t border-gray-200 mt-4 pt-4 flex justify-between font-bold text-gray-900">
+        <div class="summary-total">
           <span>Total</span>
           <span>{{money cart.total}}</span>
         </div>
@@ -198,11 +187,12 @@ function getFormData() {
 function validateForm() {
   const d = getFormData();
   if (!d.email || !d.firstName || !d.lastName || !d.line1 || !d.city || !d.postcode || !d.country) {
-    document.getElementById('payment-error').textContent = 'Please fill in all required fields.';
-    document.getElementById('payment-error').classList.remove('hidden');
+    const el = document.getElementById('payment-error');
+    el.textContent = 'Please fill in all required fields.';
+    el.style.display = 'block';
     return false;
   }
-  document.getElementById('payment-error').classList.add('hidden');
+  document.getElementById('payment-error').style.display = 'none';
   return true;
 }
 
@@ -217,7 +207,6 @@ function submitStripe() {
 }
 
 {{#if paypalEnabled}}
-// PayPal
 function initPayPal() {
   paypal.Buttons({
     createOrder: async () => {
@@ -240,21 +229,22 @@ function initPayPal() {
       });
       const result = await res.json();
       if (result.error) {
-        document.getElementById('payment-error').textContent = result.error;
-        document.getElementById('payment-error').classList.remove('hidden');
+        const el = document.getElementById('payment-error');
+        el.textContent = result.error;
+        el.style.display = 'block';
         return;
       }
       window.location.href = '/checkout/success/' + result.orderId;
     },
     onError: (err) => {
-      document.getElementById('payment-error').textContent = 'PayPal error — please try again or pay by card.';
-      document.getElementById('payment-error').classList.remove('hidden');
+      const el = document.getElementById('payment-error');
+      el.textContent = 'PayPal error — please try again or pay by card.';
+      el.style.display = 'block';
       console.error(err);
     },
   }).render('#paypal-button-container');
 }
 
-// Load PayPal SDK then init
 (function() {
   const s = document.createElement('script');
   s.src = 'https://www.paypal.com/sdk/js?client-id={{paypalClientId}}&currency={{store.currency}}&intent=capture{{#if (eq paypalMode "sandbox")}}&buyer-country=GB{{/if}}';

@@ -1,32 +1,29 @@
 <div id="cart-contents">
   {{#unless cart.empty}}
-    <div class="divide-y divide-gray-100">
+    <div class="cart-items">
       {{#each cart.items}}
-        <div class="py-5 flex gap-4 items-start">
+        <div class="cart-item">
 
           <!-- Image -->
-          <a href="{{url 'product' this.productSlug}}" class="flex-shrink-0">
-            <div class="w-24 h-24 rounded-xl overflow-hidden bg-gray-100">
-              <img src="{{this.image.thumbnail}}" alt="{{this.productTitle}}" class="w-full h-full object-cover">
+          <a href="{{url 'product' this.productSlug}}" class="cart-item__img-link">
+            <div class="cart-item__img">
+              <img src="{{this.image.thumbnail}}" alt="{{this.productTitle}}">
             </div>
           </a>
 
           <!-- Details -->
-          <div class="flex-1 min-w-0">
-            <a href="{{url 'product' this.productSlug}}"
-               class="font-medium text-sm text-gray-900 hover:underline leading-snug block">
+          <div class="cart-item__body">
+            <a href="{{url 'product' this.productSlug}}" class="cart-item__title">
               {{this.productTitle}}
             </a>
             {{#unless (is this.variantTitle "Default")}}
-              <p class="text-xs text-gray-400 mt-0.5">{{this.variantTitle}}</p>
+              <p class="cart-item__variant">{{this.variantTitle}}</p>
             {{/unless}}
-            <p class="text-sm font-semibold text-gray-900 mt-2">{{money this.lineTotal}}</p>
+            <p class="cart-item__price">{{money this.lineTotal}}</p>
 
-            <!-- Quantity + remove (below product info on mobile) -->
-            <div class="flex items-center gap-3 mt-3">
-              <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                <button type="button" onclick="stepQty(this, -1)"
-                        class="px-3 py-1.5 text-gray-500 hover:bg-gray-50 text-sm leading-none">−</button>
+            <div class="cart-item__controls">
+              <div class="qty-control">
+                <button type="button" onclick="stepQty(this, -1)" class="qty-btn">−</button>
                 <input type="number" value="{{this.quantity}}" min="1"
                        hx-post="/{{../store.cartSlug}}/update"
                        hx-target="#cart-contents"
@@ -34,15 +31,14 @@
                        hx-vals='{"itemId": "{{this.id}}"}'
                        hx-trigger="change"
                        name="quantity"
-                       class="w-10 text-center text-sm border-x border-gray-200 py-1.5 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
-                <button type="button" onclick="stepQty(this, 1)"
-                        class="px-3 py-1.5 text-gray-500 hover:bg-gray-50 text-sm leading-none">+</button>
+                       class="qty-num">
+                <button type="button" onclick="stepQty(this, 1)" class="qty-btn">+</button>
               </div>
 
               <button hx-delete="/{{../store.cartSlug}}/remove/{{this.id}}"
                       hx-target="#cart-contents"
                       hx-swap="outerHTML"
-                      class="text-xs text-gray-400 hover:text-red-500 transition-colors">
+                      class="remove-btn">
                 Remove
               </button>
             </div>

@@ -32,6 +32,7 @@
       "heroImageFit":        { "type": "select",  "default": "cover",      "options": ["cover", "contain"],                     "label": "Image fit" },
       "heroImagePadding":    { "type": "select",  "default": "0px",        "options": ["0px", "0.75rem", "1.5rem", "3rem"],     "label": "Image padding" },
       "heroPosition":        { "type": "select",  "default": "background", "options": ["background", "center", "left", "right"], "label": "Image position" },
+      "heroAlign":           { "type": "select",  "default": "left",       "options": ["left", "center"],                        "label": "Heading alignment" },
       "featuredSections": {
         "type": "repeater",
         "default": [ { "title": "Featured Products", "collection": "", "count": "8", "sort": "featured" } ],

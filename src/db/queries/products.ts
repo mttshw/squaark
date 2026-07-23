@@ -93,6 +93,14 @@ export function findAllProducts(limit?: number): ProductRow[] {
   return limit ? query<ProductRow>(sql, [limit]) : query<ProductRow>(sql);
 }
 
+export function searchProducts(q: string, limit = 40): ProductRow[] {
+  const like = `%${q}%`;
+  return query<ProductRow>(
+    `${PRODUCT_SUMMARY_SQL} WHERE p.published = 1 AND (p.title LIKE ? OR p.description LIKE ? OR p.vendor LIKE ? OR p.tags_text LIKE ?) ORDER BY p.created_at DESC LIMIT ?`,
+    [like, like, like, like, limit]
+  );
+}
+
 export function findProductsByCollection(collectionId: string, limit?: number, sort: 'featured' | 'newest' = 'featured'): ProductRow[] {
   const order = sort === 'newest' ? 'p.created_at DESC' : 'cp.position';
   const sql = `

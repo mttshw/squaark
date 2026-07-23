@@ -1,38 +1,34 @@
 {{> header}}
 
-<div class="max-w-md mx-auto px-4 py-16">
-  <h1 class="text-2xl font-bold text-gray-900 mb-2">Sign in</h1>
-  <p class="text-sm text-gray-500 mb-8">Access your orders and account details.</p>
+<div class="container--narrow auth-page">
+  <h1 class="auth-title">Sign in</h1>
+  <p style="font-size:0.875rem;color:#6b7280;margin-bottom:2rem;">Access your orders and account details.</p>
 
   {{#if error}}
-  <div class="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+  <div class="auth-error">
     {{#if (eq error 'invalid')}}Email or password is incorrect.{{/if}}
     {{#if (eq error 'missing_fields')}}Please enter your email and password.{{/if}}
   </div>
   {{/if}}
 
-  <form method="POST" action="/account/login" class="space-y-4">
+  <form method="POST" action="/account/login" class="auth-form">
     {{csrf_field}}
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-      <input type="email" name="email" required autocomplete="email"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+      <label class="store-label">Email</label>
+      <input type="email" name="email" required autocomplete="email" class="store-input">
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-      <input type="password" name="password" required autocomplete="current-password"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+      <label class="store-label">Password</label>
+      <input type="password" name="password" required autocomplete="current-password" class="store-input">
     </div>
-    <button type="submit"
-      class="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-lg hover:opacity-90 transition-opacity"
-      style="background: var(--color-primary)">
+    <button type="submit" class="btn btn-block" style="background:var(--color-primary);color:#fff;justify-content:center;">
       Sign in
     </button>
   </form>
 
-  <p class="text-sm text-gray-500 text-center mt-6">
+  <p style="font-size:0.875rem;color:#6b7280;text-align:center;margin-top:1.5rem;">
     Don't have an account?
-    <a href="/account/register" class="font-medium text-gray-900 hover:underline">Create one</a>
+    <a href="/account/register" style="font-weight:500;color:#111827;">Create one</a>
   </p>
 </div>
 

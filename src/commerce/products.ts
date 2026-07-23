@@ -5,6 +5,7 @@ import {
   findProductImages,
   findProductVariants,
   findRelatedProducts,
+  searchProducts as dbSearchProducts,
   type ProductRow,
   type ProductImageRow,
   type VariantRow,
@@ -60,6 +61,10 @@ export function rowToProductSummary(row: ProductRow): ProductSummary {
 
 export async function listProducts(limit?: number): Promise<ProductSummary[]> {
   return findAllProducts(limit).map(rowToProductSummary);
+}
+
+export async function searchProducts(q: string): Promise<ProductSummary[]> {
+  return dbSearchProducts(q).map(rowToProductSummary);
 }
 
 export async function listCollectionProducts(collectionId: string, limit?: number, sort: 'featured' | 'newest' = 'featured'): Promise<ProductSummary[]> {

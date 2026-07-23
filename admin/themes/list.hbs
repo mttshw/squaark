@@ -1,50 +1,38 @@
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold">Themes</h1>
-  <label class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 cursor-pointer">
+<div class="page-header">
+  <h1 class="page-title">Themes</h1>
+  <label class="btn btn-primary btn-sm" style="cursor:pointer;">
     Upload theme
-    <form id="upload-form" method="POST" action="/admin/themes/upload" enctype="multipart/form-data" class="hidden">
+    <form id="upload-form" method="POST" action="/admin/themes/upload" enctype="multipart/form-data" style="display:none;">
       <input type="file" name="file" accept=".zip" onchange="document.getElementById('upload-form').submit()">
     </form>
   </label>
 </div>
 
-{{#if activated}}
-<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Theme activated.</div>
-{{/if}}
-{{#if installed}}
-<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Theme "{{installed}}" installed successfully.</div>
-{{/if}}
-{{#if error}}
-<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{error}}</div>
-{{/if}}
+{{#if activated}}<div class="alert alert-success">Theme activated.</div>{{/if}}
+{{#if installed}}<div class="alert alert-success">Theme "{{installed}}" installed successfully.</div>{{/if}}
+{{#if error}}<div class="alert alert-error">{{error}}</div>{{/if}}
 
-<div class="grid grid-cols-3 gap-4">
+<div class="grid-3">
   {{#each themes}}
-  <div class="bg-white rounded-xl border {{#if (eq this.active 1)}}border-gray-900 ring-1 ring-gray-900{{else}}border-gray-200{{/if}} p-5">
-    <div class="flex items-start justify-between mb-3">
+  <div class="theme-card {{#if (eq this.active 1)}}theme-card--active{{/if}}">
+    <div class="theme-card__header">
       <div>
         <p class="font-semibold">{{this.name}}</p>
-        <p class="text-xs text-gray-400 mt-0.5">v{{this.version}} · by {{this.author}}</p>
+        <p class="text-xs text-muted" style="margin-top:0.125rem;">v{{this.version}} · by {{this.author}}</p>
       </div>
       {{#if (eq this.active 1)}}
-      <span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
+      <span class="badge badge-green">Active</span>
       {{/if}}
     </div>
-    <p class="text-sm text-gray-500 mb-4">{{this.description}}</p>
-    <div class="flex gap-2">
-      <a href="/admin/themes/{{this.id}}/config" class="text-sm text-gray-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-gray-400">
-        Customise
-      </a>
+    <p class="text-sm text-muted mb-4">{{this.description}}</p>
+    <div class="row">
+      <a href="/admin/themes/{{this.id}}/config" class="btn btn-secondary btn-sm">Customise</a>
       {{#unless (eq this.active 1)}}
       <form method="POST" action="/admin/themes/{{this.id}}/activate">
-        <button type="submit" class="text-sm bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700">
-          Activate
-        </button>
+        <button type="submit" class="btn btn-primary btn-sm">Activate</button>
       </form>
       {{/unless}}
-      <a href="/" target="_blank" class="text-sm text-gray-400 border border-gray-100 px-3 py-1.5 rounded-lg hover:border-gray-300">
-        Preview ↗
-      </a>
+      <a href="/" target="_blank" class="btn btn-secondary btn-sm">Preview ↗</a>
     </div>
   </div>
   {{/each}}

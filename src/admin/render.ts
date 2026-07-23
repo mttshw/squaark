@@ -68,15 +68,15 @@ hbs.registerHelper('sparkline_bars', (daily: Array<{ date: string; views: number
   const max = Math.max(...days.map((d) => d.views), 1);
   const bars = days.map(({ label, views }) => {
     const pct = Math.round((views / max) * 100);
-    return `<div class="flex flex-col items-center gap-1 flex-1">
-      <span class="text-xs text-gray-400">${views}</span>
-      <div class="w-full rounded-t" style="height:48px;display:flex;align-items:flex-end">
-        <div class="w-full rounded-t bg-gray-800" style="height:${Math.max(pct, 2)}%" title="${views} views"></div>
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;flex:1;">
+      <span style="font-size:0.75rem;color:#9ca3af;">${views}</span>
+      <div style="width:100%;height:48px;display:flex;align-items:flex-end;">
+        <div style="width:100%;border-radius:0.25rem 0.25rem 0 0;background:#1f2937;height:${Math.max(pct, 2)}%;" title="${views} views"></div>
       </div>
-      <span class="text-xs text-gray-400">${label}</span>
+      <span style="font-size:0.75rem;color:#9ca3af;">${label}</span>
     </div>`;
   }).join('');
-  return new Handlebars.SafeString(`<div class="flex items-end gap-1 w-full" style="height:80px">${bars}</div>`);
+  return new Handlebars.SafeString(`<div style="display:flex;align-items:flex-end;gap:0.25rem;width:100%;height:80px;">${bars}</div>`);
 });
 
 hbs.registerHelper('status_badge', (status: string) => {

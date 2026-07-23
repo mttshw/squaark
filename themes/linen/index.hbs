@@ -4,46 +4,44 @@
   {{#if showHero}}
 
   {{#if (or (eq theme.config.layout.heroPosition 'left') (eq theme.config.layout.heroPosition 'right'))}}
-  {{!-- Split layout: full-width background, content constrained --}}
-  <section class="w-full overflow-hidden" style="background:var(--color-hero, var(--color-primary))">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row" style="min-height:460px">
+  {{!-- Split: image on one side, text on the other --}}
+  <section class="hero hero--split" style="background:var(--color-hero, var(--color-primary))">
+    <div class="hero__inner">
 
       {{#if (eq theme.config.layout.heroPosition 'left')}}
-      <div class="relative flex-1 min-h-64 md:min-h-0" style="overflow:hidden">
+      <div class="hero__image-pane">
         {{#if theme.config.layout.heroImage}}
-        <div class="absolute inset-0" style="padding:{{theme.config.layout.heroImagePadding}}">
-          <img src="{{theme.config.layout.heroImage}}" alt="" class="w-full h-full"
-               style="object-fit:{{theme.config.layout.heroImageFit}}">
+        <div style="position:absolute;inset:0;padding:{{theme.config.layout.heroImagePadding}};overflow:hidden;">
+          <img src="{{theme.config.layout.heroImage}}" alt=""
+               style="width:100%;height:100%;object-fit:{{theme.config.layout.heroImageFit}};">
         </div>
         {{else}}
-        <div class="absolute inset-0" style="background:var(--color-accent);opacity:0.3"></div>
+        <div class="hero__image-overlay"></div>
         {{/if}}
       </div>
       {{/if}}
 
-      <div class="flex-1 flex flex-col justify-center text-white px-6 py-14 md:px-10">
-        {{#if heroEyebrow}}<p class="text-xs font-semibold uppercase tracking-[0.2em] mb-4 opacity-70">{{heroEyebrow}}</p>{{/if}}
-        <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-5">{{heroHeading}}</h1>
-        {{#if heroSubheading}}<p class="text-lg mb-10 opacity-75">{{heroSubheading}}</p>{{/if}}
-        <a href="/collections/all"
-           class="self-start inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full"
-           style="background:var(--color-accent);color:white">
+      <div class="hero__content{{#if (eq theme.config.layout.heroAlign 'center')}} hero__content--center{{/if}}">
+        {{#if heroEyebrow}}<p class="hero__eyebrow">{{heroEyebrow}}</p>{{/if}}
+        <h1 class="hero__title">{{heroHeading}}</h1>
+        {{#if heroSubheading}}<p class="hero__subtitle">{{heroSubheading}}</p>{{/if}}
+        <a href="/collections/all" class="hero__cta">
           Shop Now
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </a>
       </div>
 
       {{#if (eq theme.config.layout.heroPosition 'right')}}
-      <div class="relative flex-1 min-h-64 md:min-h-0" style="overflow:hidden">
+      <div class="hero__image-pane">
         {{#if theme.config.layout.heroImage}}
-        <div class="absolute inset-0" style="padding:{{theme.config.layout.heroImagePadding}}">
-          <img src="{{theme.config.layout.heroImage}}" alt="" class="w-full h-full"
-               style="object-fit:{{theme.config.layout.heroImageFit}}">
+        <div style="position:absolute;inset:0;padding:{{theme.config.layout.heroImagePadding}};overflow:hidden;">
+          <img src="{{theme.config.layout.heroImage}}" alt=""
+               style="width:100%;height:100%;object-fit:{{theme.config.layout.heroImageFit}};">
         </div>
         {{else}}
-        <div class="absolute inset-0" style="background:var(--color-accent);opacity:0.3"></div>
+        <div class="hero__image-overlay"></div>
         {{/if}}
       </div>
       {{/if}}
@@ -51,25 +49,45 @@
     </div>
   </section>
 
-  {{else}}
-  {{!-- Background / center layout: full-width, content contained --}}
-  <section class="relative w-full text-white overflow-hidden" style="background:var(--color-hero, var(--color-primary));min-height:460px">
+  {{else if (eq theme.config.layout.heroPosition 'center')}}
+  {{!-- Center: text above (on hero background), image below --}}
+  <section class="hero hero--stack">
+    <div class="hero__stack-text{{#if (eq theme.config.layout.heroAlign 'center')}} hero__stack-text--center{{/if}}"
+         style="background:var(--color-hero, var(--color-primary))">
+      {{#if heroEyebrow}}<p class="hero__eyebrow">{{heroEyebrow}}</p>{{/if}}
+      <h1 class="hero__title">{{heroHeading}}</h1>
+      {{#if heroSubheading}}<p class="hero__subtitle">{{heroSubheading}}</p>{{/if}}
+      <a href="/collections/all" class="hero__cta">
+        Shop Now
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
     {{#if theme.config.layout.heroImage}}
-    <div class="absolute inset-0" style="padding:{{theme.config.layout.heroImagePadding}}">
-      <img src="{{theme.config.layout.heroImage}}" alt="" class="w-full h-full opacity-30"
-           style="object-fit:{{theme.config.layout.heroImageFit}}">
+    <div class="hero__stack-image">
+      <img src="{{theme.config.layout.heroImage}}" alt=""
+           style="object-fit:{{theme.config.layout.heroImageFit}};padding:{{theme.config.layout.heroImagePadding}};">
     </div>
     {{/if}}
-    <div class="relative max-w-7xl mx-auto px-10 py-28 flex flex-col justify-center
-                {{#if (eq theme.config.layout.heroPosition 'center')}}items-center text-center{{else}}items-start{{/if}}">
-      {{#if heroEyebrow}}<p class="text-xs font-semibold uppercase tracking-[0.2em] mb-4 opacity-70">{{heroEyebrow}}</p>{{/if}}
-      <h1 class="text-5xl sm:text-6xl font-bold leading-tight mb-5 max-w-2xl">{{heroHeading}}</h1>
-      {{#if heroSubheading}}<p class="text-lg mb-10 max-w-md opacity-75">{{heroSubheading}}</p>{{/if}}
-      <a href="/collections/all"
-         class="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full"
-         style="background:var(--color-accent);color:white">
+  </section>
+
+  {{else}}
+  {{!-- Background: full-bleed image behind text --}}
+  <section class="hero hero--bg" style="background:var(--color-hero, var(--color-primary))">
+    {{#if theme.config.layout.heroImage}}
+    <div style="position:absolute;inset:0;padding:{{theme.config.layout.heroImagePadding}};overflow:hidden;opacity:0.3;">
+      <img src="{{theme.config.layout.heroImage}}" alt=""
+           style="width:100%;height:100%;object-fit:{{theme.config.layout.heroImageFit}};">
+    </div>
+    {{/if}}
+    <div class="hero__content{{#if (eq theme.config.layout.heroAlign 'center')}} hero__content--center{{/if}}">
+      {{#if heroEyebrow}}<p class="hero__eyebrow">{{heroEyebrow}}</p>{{/if}}
+      <h1 class="hero__title">{{heroHeading}}</h1>
+      {{#if heroSubheading}}<p class="hero__subtitle">{{heroSubheading}}</p>{{/if}}
+      <a href="/collections/all" class="hero__cta">
         Shop Now
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
         </svg>
       </a>
@@ -82,55 +100,57 @@
   <!-- Featured sections -->
   {{#each featuredSections}}
   {{#if this.products.length}}
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <div class="flex items-baseline justify-between mb-10">
-      <h2 class="text-2xl font-bold text-gray-900">{{this.title}}</h2>
-      <a href="{{#if this.collectionSlug}}/collections/{{this.collectionSlug}}{{else}}/collections/all{{/if}}"
-         class="text-sm font-medium transition-colors" style="color:var(--color-accent)">
-        View all →
-      </a>
-    </div>
+  <section class="featured-section">
+    <div class="container">
+      <div class="featured-section__head">
+        <h2 class="featured-section__title">{{this.title}}</h2>
+        <a href="{{#if this.collectionSlug}}/collections/{{this.collectionSlug}}{{else}}/collections/all{{/if}}"
+           class="featured-section__link">
+          View all →
+        </a>
+      </div>
 
-    <div class="grid gap-8"
-         style="grid-template-columns: repeat({{../theme.config.layout.productsPerRow}}, minmax(0, 1fr))">
-      {{#each this.products}}
-        {{> product-card}}
-      {{/each}}
+      <div class="product-grid"
+           style="grid-template-columns: repeat({{../theme.config.layout.productsPerRow}}, minmax(0, 1fr))">
+        {{#each this.products}}
+          {{> product-card}}
+        {{/each}}
+      </div>
     </div>
   </section>
   {{/if}}
   {{/each}}
 
   <!-- Value props -->
-  <section class="border-t border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-        <div class="space-y-2">
-          <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center" style="background:#f3f4f6">
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <section class="value-props">
+    <div class="container">
+      <div class="value-props__grid">
+        <div>
+          <div class="value-prop__icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 text-sm">Free Shipping</h3>
-          <p class="text-xs text-gray-500">On all orders over $50</p>
+          <h3 class="value-prop__title">Free Shipping</h3>
+          <p class="value-prop__body">On all orders over $50</p>
         </div>
-        <div class="space-y-2">
-          <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center" style="background:#f3f4f6">
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div>
+          <div class="value-prop__icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 text-sm">30-Day Returns</h3>
-          <p class="text-xs text-gray-500">Hassle-free returns</p>
+          <h3 class="value-prop__title">30-Day Returns</h3>
+          <p class="value-prop__body">Hassle-free returns</p>
         </div>
-        <div class="space-y-2">
-          <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center" style="background:#f3f4f6">
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div>
+          <div class="value-prop__icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 text-sm">Secure Checkout</h3>
-          <p class="text-xs text-gray-500">SSL encrypted payments</p>
+          <h3 class="value-prop__title">Secure Checkout</h3>
+          <p class="value-prop__body">SSL encrypted payments</p>
         </div>
       </div>
     </div>
