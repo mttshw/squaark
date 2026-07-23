@@ -62,6 +62,22 @@
       <!-- Right actions -->
       <div class="flex items-center gap-4" style="color:var(--color-header-text, #111827)">
 
+        <!-- Account -->
+        {{#if store.customerAccountsEnabled}}
+        <a href="/account" class="transition-opacity opacity-60 hover:opacity-100" aria-label="{{#if customer.loggedIn}}My account{{else}}Sign in{{/if}}">
+          {{#if customer.loggedIn}}
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/>
+          </svg>
+          {{else}}
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z"/>
+          </svg>
+          {{/if}}
+        </a>
+        {{/if}}
+
         <!-- Search -->
         <a href="/search" class="transition-opacity opacity-60 hover:opacity-100" aria-label="Search">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

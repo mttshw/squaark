@@ -1,0 +1,85 @@
+{{> header}}
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+  <div class="flex items-center gap-3 mb-8">
+    <a href="/account/orders" class="text-sm text-gray-500 hover:text-gray-700">← My orders</a>
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-1">Order #{{order.order_number}}</h1>
+  <p class="text-sm text-gray-500 mb-8">Placed {{timestamp order.created_at}}</p>
+
+  <!-- Status -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-xs text-gray-400 mb-1">Status</p>
+        <span class="inline-block px-2.5 py-1 rounded text-sm font-medium
+          {{#if (eq order.status 'paid')}}bg-green-100 text-green-800{{/if}}
+          {{#if (eq order.status 'pending')}}bg-yellow-100 text-yellow-800{{/if}}
+          {{#if (eq order.status 'refunded')}}bg-red-100 text-red-800{{/if}}
+          {{#if (eq order.status 'cancelled')}}bg-gray-100 text-gray-600{{/if}}
+        ">{{order.status}}</span>
+      </div>
+      <div class="text-right">
+        <p class="text-xs text-gray-400 mb-1">Total</p>
+        <p class="text-xl font-bold">{{pence order.total}}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
+      <p class="text-sm font-medium text-gray-700">Items</p>
+    </div>
+    <table class="w-full text-sm">
+      <tbody class="divide-y divide-gray-100">
+        {{#each items}}
+        <tr>
+          <td class="px-5 py-4">
+            <p class="font-medium">{{this.product_title}}</p>
+            {{#if (ne this.variant_title 'Default')}}<p class="text-xs text-gray-500 mt-0.5">{{this.variant_title}}</p>{{/if}}
+          </td>
+          <td class="px-5 py-4 text-gray-500 text-center">×{{this.quantity}}</td>
+          <td class="px-5 py-4 text-right font-medium">{{pence this.line_total}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    <div class="px-5 py-4 border-t border-gray-100 space-y-1.5 text-sm">
+      <div class="flex justify-between text-gray-500">
+        <span>Subtotal</span><span>{{pence order.subtotal}}</span>
+      </div>
+      {{#if order.shipping}}
+      <div class="flex justify-between text-gray-500">
+        <span>Shipping</span><span>{{pence order.shipping}}</span>
+      </div>
+      {{/if}}
+      {{#if order.discount_amount}}
+      <div class="flex justify-between text-green-600">
+        <span>Discount</span><span>−{{pence order.discount_amount}}</span>
+      </div>
+      {{/if}}
+      <div class="flex justify-between font-semibold text-gray-900 pt-1 border-t border-gray-100">
+        <span>Total</span><span>{{pence order.total}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Addresses -->
+  {{#with (parseJson order.shipping_address)}}
+  {{#if first_name}}
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <p class="text-sm font-medium text-gray-700 mb-2">Shipping address</p>
+    <p class="text-sm text-gray-600">{{first_name}} {{last_name}}</p>
+    <p class="text-sm text-gray-600">{{address_1}}{{#if address_2}}, {{address_2}}{{/if}}</p>
+    <p class="text-sm text-gray-600">{{city}}{{#if postcode}}, {{postcode}}{{/if}}</p>
+    {{#if country}}<p class="text-sm text-gray-600">{{country}}</p>{{/if}}
+  </div>
+  {{/if}}
+  {{/with}}
+
+</div>
+
+{{> footer}}

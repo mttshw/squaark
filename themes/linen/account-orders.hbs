@@ -1,0 +1,59 @@
+{{> header}}
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">My orders</h1>
+      <p class="text-sm text-gray-500 mt-1">Hi {{customer.first_name}}{{#if customer.last_name}} {{customer.last_name}}{{/if}}</p>
+    </div>
+    <form method="POST" action="/account/logout">
+      {{csrf_field}}
+      <button type="submit" class="text-sm text-gray-500 hover:text-gray-700">Sign out</button>
+    </form>
+  </div>
+
+  {{#if orders.length}}
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="border-b border-gray-100 bg-gray-50">
+        <tr>
+          <th class="text-left px-5 py-3 font-medium text-gray-500">Order</th>
+          <th class="text-left px-5 py-3 font-medium text-gray-500">Date</th>
+          <th class="text-left px-5 py-3 font-medium text-gray-500">Status</th>
+          <th class="text-right px-5 py-3 font-medium text-gray-500">Total</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {{#each orders}}
+        <tr>
+          <td class="px-5 py-4 font-medium">#{{this.order_number}}</td>
+          <td class="px-5 py-4 text-gray-500">{{timestamp this.created_at}}</td>
+          <td class="px-5 py-4">
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium
+              {{#if (eq this.status 'paid')}}bg-green-100 text-green-800{{/if}}
+              {{#if (eq this.status 'pending')}}bg-yellow-100 text-yellow-800{{/if}}
+              {{#if (eq this.status 'refunded')}}bg-red-100 text-red-800{{/if}}
+              {{#if (eq this.status 'cancelled')}}bg-gray-100 text-gray-600{{/if}}
+            ">{{this.status}}</span>
+          </td>
+          <td class="px-5 py-4 text-right font-medium">{{pence this.total}}</td>
+          <td class="px-5 py-4 text-right">
+            <a href="/account/orders/{{this.id}}" class="text-sm font-medium hover:underline" style="color: var(--color-primary)">View</a>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="bg-white rounded-xl border border-gray-200 px-5 py-16 text-center text-gray-400">
+    <p class="mb-4">You haven't placed any orders yet.</p>
+    <a href="/collections/all" class="text-sm font-medium hover:underline" style="color: var(--color-primary)">Browse products</a>
+  </div>
+  {{/if}}
+
+</div>
+
+{{> footer}}

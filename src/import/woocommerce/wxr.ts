@@ -1,5 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
-import type { NormalizedProduct, NormalizedVariation, NormalizedCategory, NormalizedImage, NormalizedPage } from './types';
+import type { NormalizedProduct, NormalizedVariation, NormalizedCategory, NormalizedImage, NormalizedPage, NormalizedOrder } from './types';
 
 const ARRAY_TAGS = new Set(['item', 'category', 'wp:postmeta']);
 
@@ -61,16 +61,31 @@ function optionsFromAttributeMeta(item: WxrItem): Record<string, string> {
   return options;
 }
 
+export interface SiteInfo {
+  name: string | null;
+  url: string | null;
+  description: string | null;
+}
+
 export interface WxrParseResult {
   products: NormalizedProduct[];
   pages: NormalizedPage[];
+  orders: NormalizedOrder[];
   warnings: string[];
+  siteInfo: SiteInfo;
 }
 
 /** Parses a WordPress export (WXR) file, pulling out WooCommerce products, variations, categories and images. */
 export function parseWxr(xml: string): WxrParseResult {
   const doc = parser.parse(xml);
-  const items: WxrItem[] = doc?.rss?.channel?.item ?? [];
+  const channel = doc?.rss?.channel ?? {};
+  const items: WxrItem[] = channel?.item ?? [];
+
+  const siteInfo: SiteInfo = {
+    name: text(channel.title) || null,
+    url: text(channel.link) || null,
+    description: text(channel.description) || null,
+  };
   const warnings: string[] = [];
 
   const attachmentUrlById = new Map<string, string>();
@@ -179,9 +194,75 @@ export function parseWxr(xml: string): WxrParseResult {
     });
   }
 
-  if (products.length === 0 && pages.length === 0) {
-    warnings.push('No WooCommerce products or pages found in this export file.');
+  const ORDER_STATUS_MAP: Record<string, string> = {
+    'wc-pending': 'pending', 'wc-on-hold': 'pending',
+    'wc-processing': 'paid', 'wc-completed': 'paid',
+    'wc-refunded': 'refunded',
+    'wc-cancelled': 'cancelled', 'wc-failed': 'cancelled', 'wc-trash': 'cancelled',
+  };
+
+  const orders: NormalizedOrder[] = [];
+
+  for (const item of items) {
+    if (item['wp:post_type'] !== 'shop_order') continue;
+    const wcId = parseInt(item['wp:post_id'] ?? '', 10);
+    if (!wcId) continue;
+
+    const rawStatus = text(item['wp:status']);
+    const status = ORDER_STATUS_MAP[rawStatus] ?? 'pending';
+
+    const total = Math.round((toNumber(meta(item, '_order_total')) ?? 0) * 100);
+    const discount = Math.round((toNumber(meta(item, '_cart_discount') ?? meta(item, '_discount_total')) ?? 0) * 100);
+    const shipping = Math.round((toNumber(meta(item, '_order_shipping')) ?? 0) * 100);
+    const subtotal = total - shipping - Math.round((toNumber(meta(item, '_order_tax')) ?? 0) * 100);
+    const currency = meta(item, '_order_currency') ?? 'GBP';
+    const email = meta(item, '_billing_email') ?? '';
+
+    const billing: Record<string, string> = {};
+    const shipping_addr: Record<string, string> = {};
+    for (const [mk, bk] of [
+      ['_billing_first_name', 'first_name'], ['_billing_last_name', 'last_name'],
+      ['_billing_address_1', 'address_1'], ['_billing_address_2', 'address_2'],
+      ['_billing_city', 'city'], ['_billing_state', 'state'],
+      ['_billing_postcode', 'postcode'], ['_billing_country', 'country'],
+      ['_billing_phone', 'phone'], ['_billing_email', 'email'],
+    ] as const) {
+      const v = meta(item, mk);
+      if (v) billing[bk] = v;
+    }
+    for (const [mk, sk] of [
+      ['_shipping_first_name', 'first_name'], ['_shipping_last_name', 'last_name'],
+      ['_shipping_address_1', 'address_1'], ['_shipping_address_2', 'address_2'],
+      ['_shipping_city', 'city'], ['_shipping_state', 'state'],
+      ['_shipping_postcode', 'postcode'], ['_shipping_country', 'country'],
+    ] as const) {
+      const v = meta(item, mk);
+      if (v) shipping_addr[sk] = v;
+    }
+
+    const orderNumber = parseInt(text(item.title), 10) || wcId;
+    const createdAt = text((item as Record<string, unknown>)['wp:post_date_gmt'] as unknown) || null;
+
+    orders.push({
+      wcId,
+      orderNumber,
+      email,
+      status,
+      currency,
+      subtotal: Math.max(subtotal, 0),
+      discountAmount: discount,
+      shipping,
+      total,
+      billingAddress: billing,
+      shippingAddress: shipping_addr,
+      createdAt,
+      items: [],
+    });
   }
 
-  return { products, pages, warnings };
+  if (products.length === 0 && pages.length === 0 && orders.length === 0) {
+    warnings.push('No WooCommerce products, orders or pages found in this export file.');
+  }
+
+  return { products, pages, orders, warnings, siteInfo };
 }

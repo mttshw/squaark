@@ -54,6 +54,31 @@ hbs.registerHelper('jsonLength', (json: string) => {
 hbs.registerHelper('jsonNonEmpty', (json: string) => {
   try { return JSON.parse(json).length > 0; } catch { return false; }
 });
+hbs.registerHelper('sparkline_bars', (daily: Array<{ date: string; views: number }>) => {
+  if (!Array.isArray(daily) || daily.length === 0) return new Handlebars.SafeString('');
+  const days: Array<{ label: string; views: number }> = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    const label = d.toLocaleDateString('en-GB', { weekday: 'short' });
+    const found = daily.find((r) => r.date === iso);
+    days.push({ label, views: found?.views ?? 0 });
+  }
+  const max = Math.max(...days.map((d) => d.views), 1);
+  const bars = days.map(({ label, views }) => {
+    const pct = Math.round((views / max) * 100);
+    return `<div class="flex flex-col items-center gap-1 flex-1">
+      <span class="text-xs text-gray-400">${views}</span>
+      <div class="w-full rounded-t" style="height:48px;display:flex;align-items:flex-end">
+        <div class="w-full rounded-t bg-gray-800" style="height:${Math.max(pct, 2)}%" title="${views} views"></div>
+      </div>
+      <span class="text-xs text-gray-400">${label}</span>
+    </div>`;
+  }).join('');
+  return new Handlebars.SafeString(`<div class="flex items-end gap-1 w-full" style="height:80px">${bars}</div>`);
+});
+
 hbs.registerHelper('status_badge', (status: string) => {
   const map: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',

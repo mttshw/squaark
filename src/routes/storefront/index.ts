@@ -7,6 +7,8 @@ import { getCartSummary, getCartPage, addToCart, updateCartItem, removeFromCart 
 import { findPageBySlug } from '../../db/queries/pages';
 import { getAllSettings } from '../../db/queries/admin';
 import { checkoutRoutes } from './checkout';
+import { accountRoutes } from './account';
+import { findCustomerById } from '../../db/queries/customers';
 
 async function base(
   req: FastifyRequest,
@@ -16,9 +18,15 @@ async function base(
 ): Promise<ReturnType<typeof buildGlobalContext> & { csrfToken: string; cssVars: string }> {
   const cartSummary = await getCartSummary(req.cartId);
   const global = buildGlobalContext(currentPath, registry.currentThemeConfig);
+  let customer = null;
+  if (req.session.customerId) {
+    const c = findCustomerById(req.session.customerId);
+    if (c) customer = { loggedIn: true, firstName: c.first_name || null };
+  }
   return {
     ...global,
     cart: cartSummary,
+    customer,
     csrfToken: reply.generateCsrf(),
     cssVars: registry.currentCssVars,
   };
@@ -50,6 +58,7 @@ async function cartFragment(
 
 export async function storefrontRoutes(fastify: FastifyInstance, registry: ThemeRegistry): Promise<void> {
   await checkoutRoutes(fastify, registry);
+  await accountRoutes(fastify, registry);
 
   // Read once at startup — changing cart_slug requires a server restart
   const cartSlug = getAllSettings().cart_slug || 'cart';

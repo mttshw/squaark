@@ -4,9 +4,10 @@ import {
   appendImportJobError,
   finishImportJob,
 } from '../../db/queries/import';
-import { parseWxr } from './wxr';
+import { parseWxr, type SiteInfo } from './wxr';
 import { WooRestClient, type WooRestConfig } from './rest-client';
 import { upsertProduct, upsertOrder, upsertPage } from './mapper';
+import { setSetting } from '../../db/queries/admin';
 
 export function startWxrImportJob(xml: string): string {
   const jobId = createImportJob('wxr');
@@ -16,14 +17,26 @@ export function startWxrImportJob(xml: string): string {
   return jobId;
 }
 
+function applySiteInfo(info: SiteInfo): void {
+  if (info.name) setSetting('store_name', info.name);
+  if (info.url) setSetting('store_url', info.url);
+}
+
 async function runWxrImport(jobId: string, xml: string): Promise<void> {
   updateImportJobProgress(jobId, 'Reading export file...', 0, 0);
-  const { products, pages, warnings } = parseWxr(xml);
+  const { products, pages, orders, warnings, siteInfo } = parseWxr(xml);
   for (const w of warnings) appendImportJobError(jobId, 'file', w);
 
-  const total = products.length + pages.length;
+  applySiteInfo(siteInfo);
+
+  const total = products.length + pages.length + orders.length;
   let processed = 0;
-  updateImportJobProgress(jobId, `Importing ${products.length} products, ${pages.length} pages...`, total, processed);
+  updateImportJobProgress(
+    jobId,
+    `Importing ${products.length} products, ${orders.length} orders, ${pages.length} pages...`,
+    total,
+    processed,
+  );
 
   for (const product of products) {
     try {
@@ -33,6 +46,16 @@ async function runWxrImport(jobId: string, xml: string): Promise<void> {
     }
     processed++;
     updateImportJobProgress(jobId, `Importing products... (${processed}/${total})`, total, processed);
+  }
+
+  for (const order of orders) {
+    try {
+      upsertOrder(order);
+    } catch (err) {
+      appendImportJobError(jobId, `order #${order.orderNumber}`, err instanceof Error ? err.message : String(err));
+    }
+    processed++;
+    updateImportJobProgress(jobId, `Importing orders... (${processed}/${total})`, total, processed);
   }
 
   for (const page of pages) {
@@ -45,7 +68,11 @@ async function runWxrImport(jobId: string, xml: string): Promise<void> {
     updateImportJobProgress(jobId, `Importing pages... (${processed}/${total})`, total, processed);
   }
 
-  finishImportJob(jobId, 'completed', `Imported ${products.length} product${products.length === 1 ? '' : 's'} and ${pages.length} page${pages.length === 1 ? '' : 's'}.`);
+  finishImportJob(
+    jobId,
+    'completed',
+    `Imported ${products.length} product${products.length === 1 ? '' : 's'}, ${orders.length} order${orders.length === 1 ? '' : 's'} and ${pages.length} page${pages.length === 1 ? '' : 's'}.`,
+  );
 }
 
 export interface ApiImportOptions {
@@ -67,6 +94,9 @@ async function runApiImport(jobId: string, config: WooRestConfig, options: ApiIm
 
   updateImportJobProgress(jobId, 'Connecting to store...', 0, 0);
   await client.testConnection();
+
+  const siteInfo = await client.fetchSiteInfo();
+  applySiteInfo(siteInfo);
 
   let productTotal = 0;
   let orderTotal = 0;

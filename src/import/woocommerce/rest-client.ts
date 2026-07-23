@@ -74,6 +74,23 @@ export class WooRestClient {
     return { items, totalPages };
   }
 
+  /** Fetches basic site info from the public WordPress REST root — no auth needed. */
+  async fetchSiteInfo(): Promise<{ name: string | null; url: string | null; description: string | null }> {
+    try {
+      const root = this.base.replace('/wp-json/wc/v3', '');
+      const res = await fetch(`${root}/wp-json/`);
+      if (!res.ok) return { name: null, url: null, description: null };
+      const data = await res.json() as { name?: string; url?: string; description?: string };
+      return {
+        name: data.name || null,
+        url: data.url || null,
+        description: data.description || null,
+      };
+    } catch {
+      return { name: null, url: null, description: null };
+    }
+  }
+
   /** Verifies the store URL + credentials work before starting a full import. */
   async testConnection(): Promise<void> {
     await this.getPage('/products', 1);

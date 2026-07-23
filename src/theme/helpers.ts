@@ -16,6 +16,12 @@ export function registerHelpers(
     return `${symbol}${(m.amount / 100).toFixed(2)}`;
   });
 
+  hbs.registerHelper('pence', function (this: unknown, amount: number, options: Handlebars.HelperOptions) {
+    const root = (options?.data?.root ?? {}) as { store?: { currency?: { symbol?: string } } };
+    const symbol = root.store?.currency?.symbol ?? '$';
+    return `${symbol}${((amount ?? 0) / 100).toFixed(2)}`;
+  });
+
   hbs.registerHelper('asset', (filename: string) => resolveAsset(filename));
 
   hbs.registerHelper('url', (type: string, ...rest: unknown[]) => {
@@ -82,6 +88,10 @@ export function registerHelpers(
   hbs.registerHelper('json', (obj: unknown) =>
     new Handlebars.SafeString(`<pre class="text-xs">${JSON.stringify(obj, null, 2)}</pre>`),
   );
+
+  hbs.registerHelper('parseJson', (str: string) => {
+    try { return JSON.parse(str); } catch { return {}; }
+  });
 
   hbs.registerHelper('timestamp', (date: string | Date) => {
     const d = new Date(date);

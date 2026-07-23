@@ -7,7 +7,7 @@
       <!-- Brand -->
       <div>
         <p class="font-bold text-gray-900 mb-2">{{store.name}}</p>
-        <p class="text-sm text-gray-500">Curated goods for considered living.</p>
+        {{#if store.tagline}}<p class="text-sm text-gray-500">{{store.tagline}}</p>{{/if}}
       </div>
 
       <!-- Links -->

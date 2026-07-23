@@ -1,0 +1,109 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Users</h1>
+</div>
+
+{{#if saved}}
+<div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">Saved.</div>
+{{/if}}
+{{#if error}}
+<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+  {{#if (eq error 'email_taken')}}That email address is already in use.{{/if}}
+  {{#if (eq error 'missing_fields')}}Name, email and password are all required.{{/if}}
+  {{#if (eq error 'last_admin')}}There must be at least one admin — promote another user first.{{/if}}
+  {{#if (eq error 'cannot_delete_self')}}You can't delete your own account.{{/if}}
+  {{#if (eq error 'cannot_change_own_role')}}You can't change your own role.{{/if}}
+</div>
+{{/if}}
+
+<div class="grid grid-cols-3 gap-6">
+
+  <!-- User list -->
+  <div class="col-span-2">
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="border-b border-gray-100 bg-gray-50">
+          <tr>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Name</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Email</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Role</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Joined</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {{#each users}}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium">
+              {{this.name}}
+              {{#if (eq this.id ../admin.id)}}<span class="text-xs text-gray-400 font-normal">(you)</span>{{/if}}
+            </td>
+            <td class="px-4 py-3 text-gray-600">{{this.email}}</td>
+            <td class="px-4 py-3">
+              {{#if (eq this.id ../admin.id)}}
+              <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-900 text-white">{{this.role}}</span>
+              {{else}}
+              <form method="POST" action="/admin/users/{{this.id}}/role" class="inline-flex items-center gap-1">
+                <select name="role" onchange="this.form.submit()"
+                  class="text-xs border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900">
+                  <option value="admin" {{#if (eq this.role 'admin')}}selected{{/if}}>Admin</option>
+                  <option value="staff" {{#if (eq this.role 'staff')}}selected{{/if}}>Staff</option>
+                </select>
+              </form>
+              {{/if}}
+            </td>
+            <td class="px-4 py-3 text-gray-400 text-xs">{{date_short this.created_at}}</td>
+            <td class="px-4 py-3 text-right">
+              {{#if (ne this.id ../admin.id)}}
+              <form method="POST" action="/admin/users/{{this.id}}/delete"
+                onsubmit="return confirm('Delete {{this.name}}? This cannot be undone.')">
+                <button type="submit" class="text-xs text-red-500 hover:text-red-700">Delete</button>
+              </form>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add user form -->
+  <div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <h2 class="font-semibold mb-4">Add user</h2>
+      <form method="POST" action="/admin/users" class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Name</label>
+          <input type="text" name="name" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" name="email" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Password</label>
+          <input type="password" name="password" required minlength="8"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Role</label>
+          <select name="role"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            <option value="staff">Staff — products &amp; orders only</option>
+            <option value="admin">Admin — full access</option>
+          </select>
+        </div>
+        <button type="submit"
+          class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+          Add user
+        </button>
+      </form>
+    </div>
+    <p class="text-xs text-gray-400 mt-3 px-1">
+      Staff can manage products, collections and orders but cannot access settings, themes, or import.
+    </p>
+  </div>
+
+</div>

@@ -5,6 +5,7 @@ export interface AdminUser {
   id: string;
   email: string;
   name: string;
+  role: 'admin' | 'staff';
 }
 
 export async function verifyLogin(email: string, password: string): Promise<AdminUser | null> {
@@ -12,19 +13,23 @@ export async function verifyLogin(email: string, password: string): Promise<Admi
   if (!row) return null;
   const ok = await argon2.verify(row.password_hash, password);
   if (!ok) return null;
-  return { id: row.id, email: row.email, name: row.name };
+  return { id: row.id, email: row.email, name: row.name, role: row.role ?? 'admin' };
 }
 
 export function getAdminById(id: string): AdminUser | null {
   const row = findAdminById(id);
   if (!row) return null;
-  return { id: row.id, email: row.email, name: row.name };
+  return { id: row.id, email: row.email, name: row.name, role: row.role ?? 'admin' };
 }
 
 export async function createFirstAdmin(email: string, password: string, name: string): Promise<void> {
   if (countAdminUsers() > 0) throw new Error('Admin user already exists');
   const hash = await argon2.hash(password, { type: argon2.argon2id });
-  createAdminUser(crypto.randomUUID(), email.toLowerCase().trim(), hash, name);
+  createAdminUser(crypto.randomUUID(), email.toLowerCase().trim(), hash, name, 'admin');
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  return argon2.hash(password, { type: argon2.argon2id });
 }
 
 export function adminExists(): boolean {

@@ -127,3 +127,17 @@ export function markOrderPaid(orderId: string, paymentReference: string): void {
     [paymentReference, orderId],
   );
 }
+
+export function findOrdersByEmail(email: string): OrderRow[] {
+  return query<OrderRow>(
+    'SELECT * FROM orders WHERE lower(email) = lower(?) ORDER BY created_at DESC',
+    [email],
+  );
+}
+
+export function findOrderByIdAndEmail(id: string, email: string): OrderRow | null {
+  return queryOne<OrderRow>(
+    'SELECT * FROM orders WHERE id = ? AND lower(email) = lower(?)',
+    [id, email],
+  );
+}

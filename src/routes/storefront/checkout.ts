@@ -9,6 +9,8 @@ import { createOrder, markOrderPaid, findOrderById, findOrderByPaymentReference,
 import { sendTemplatedEmail } from '../../email/send';
 import config from '../../config';
 import { writeLog } from '../../db/queries/system-log';
+import { findCustomerByEmail, createCustomer } from '../../db/queries/customers';
+import argon2 from 'argon2';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -392,11 +394,47 @@ export async function checkoutRoutes(fastify: FastifyInstance, registry: ThemeRe
       try { return JSON.parse(order.shipping_address); } catch { return {}; }
     })();
 
+    const accountsEnabled = settings.customer_accounts_enabled !== '0';
+    const alreadyLoggedIn = !!req.session.customerId;
+    const emailHasAccount = !!findCustomerByEmail(order.email);
+    const canCreateAccount = accountsEnabled && !alreadyLoggedIn && !emailHasAccount;
+    const accountStatus = (req.query as Record<string, string>).account ?? null;
+
     await render(registry, reply, 'checkout-success', {
       ...ctx,
       pageTitle: `Order #${order.order_number} confirmed`,
       order: { ...order, items, shippingAddress },
       store: { ...ctx.store, name: settings.store_name },
+      canCreateAccount,
+      accountCreated: accountStatus === 'created',
+      orderId,
     });
+  });
+
+  // POST /checkout/create-account — password-only signup from confirmation page
+  fastify.post('/checkout/create-account', async (req, reply) => {
+    const settings = getAllSettings();
+    if (settings.customer_accounts_enabled === '0') return reply.code(404).send('Not found');
+    const { orderId, password } = req.body as { orderId?: string; password?: string };
+    if (!orderId || !password || password.length < 8) return reply.redirect(`/checkout/success/${orderId ?? ''}?account=error`);
+
+    const order = findOrderById(orderId);
+    if (!order) return reply.redirect('/');
+
+    if (findCustomerByEmail(order.email)) {
+      return reply.redirect(`/checkout/success/${orderId}?account=exists`);
+    }
+
+    const hash = await argon2.hash(password, { type: argon2.argon2id });
+    const customerId = crypto.randomUUID();
+    const nameParts = (() => {
+      try {
+        const addr = JSON.parse(order.billing_address) as Record<string, string>;
+        return { first: addr.first_name ?? addr.firstName ?? '', last: addr.last_name ?? addr.lastName ?? '' };
+      } catch { return { first: '', last: '' }; }
+    })();
+    createCustomer(customerId, order.email, hash, nameParts.first, nameParts.last);
+    req.session.customerId = customerId;
+    return reply.redirect(`/checkout/success/${orderId}?account=created`);
   });
 }

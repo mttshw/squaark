@@ -40,10 +40,12 @@ async function settingsSave(
   req: FastifyRequest<{ Body: Record<string, string> }>,
   reply: FastifyReply,
 ) {
-  const allowed = ['store_name', 'store_currency', 'store_url', 'store_email', 'store_timezone', 'cart_label', 'cart_slug'];
+  const allowed = ['store_name', 'store_tagline', 'store_currency', 'store_url', 'store_email', 'store_timezone', 'cart_label', 'cart_slug'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) setSetting(key, req.body[key]);
   }
+  // Checkbox — absent means unchecked
+  setSetting('customer_accounts_enabled', req.body.customer_accounts_enabled === '1' ? '1' : '0');
   return reply.redirect('/admin/settings?saved=1#store');
 }
 

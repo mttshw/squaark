@@ -7,6 +7,7 @@ import fastifySession from '@fastify/session';
 import fastifyMultipart from '@fastify/multipart';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import config from './config';
 import { runMigrations } from './db/migrate';
 import { themeRegistry } from './theme/registry';
@@ -14,6 +15,12 @@ import { storefrontRoutes } from './routes/storefront/index';
 import { adminRoutes } from './routes/admin/index';
 import { ensureCart } from './commerce/cart';
 import { writeLog } from './db/queries/system-log';
+import { recordPageView } from './db/queries/analytics';
+import { getSetting } from './db/queries/admin';
+
+const BOT_UA = /bot|crawler|spider|scrapy|wget|curl|python|java|ruby|go-http|httpclient|libwww|okhttp|axios|node-fetch|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegram|discord|pingdom|uptimerobot|datadog|statuscake|ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|yandex|baidu|duckduck|bingpreview|gptbot|claudebot|chatgpt/i;
+const SKIP_PREFIX = ['/admin', '/public/', '/uploads/', '/webhooks'];
+const SKIP_EXT   = /\.(js|css|ico|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|map)$/i;
 
 import './types';
 
@@ -79,6 +86,35 @@ async function build() {
     });
     fastify.log.error(err);
     reply.code(err.statusCode ?? 500).send({ error: err.message });
+  });
+
+  // ── Analytics page-view tracking ───────────────────────────────────────────
+  fastify.addHook('onSend', async (req: FastifyRequest, reply: FastifyReply) => {
+    if (req.method !== 'GET') return;
+    const status = reply.statusCode;
+    if (status < 200 || status >= 300) return;
+    const url = req.url.split('?')[0];
+    if (SKIP_PREFIX.some((p) => url.startsWith(p))) return;
+    if (SKIP_EXT.test(url)) return;
+    const ua = req.headers['user-agent'] ?? '';
+    if (BOT_UA.test(ua)) return;
+
+    const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0].trim()
+      ?? req.ip ?? '0.0.0.0';
+    const ipHash = crypto.createHash('sha256').update(ip).digest('hex').slice(0, 16);
+
+    const rawRef = req.headers['referer'] ?? req.headers['referrer'] ?? '';
+    let referrer: string | null = null;
+    if (rawRef) {
+      try {
+        const refHost = new URL(rawRef as string).hostname;
+        const storeUrl = getSetting('store_url') ?? 'http://localhost';
+        const ownHost = new URL(storeUrl).hostname;
+        if (refHost && refHost !== ownHost) referrer = refHost;
+      } catch { /* malformed referrer — ignore */ }
+    }
+
+    recordPageView(url, referrer, ipHash);
   });
 
   // ── Routes ─────────────────────────────────────────────────────────────────

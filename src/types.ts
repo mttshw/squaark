@@ -4,6 +4,7 @@ declare module 'fastify' {
   }
   interface Session {
     adminId: string;
+    customerId?: string;
     pendingOrderId?: string;
     pendingCheckoutAddress?: string;
     pendingCheckoutEmail?: string;

@@ -12,12 +12,17 @@ import { themeRoutes } from './themes';
 import { emailRoutes } from './emails';
 import { importRoutes } from './import';
 import { navigationRoutes } from './navigation';
+import { usersRoutes } from './users';
 import { countOrders } from '../../db/queries/orders';
 import { getAllSettings } from '../../db/queries/admin';
+import { queryOne } from '../../db/connection';
+import { getAnalyticsSummary } from '../../db/queries/analytics';
 
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   // Auth routes don't need the guard
   await fastify.register(authRoutes, { prefix: '/admin' });
+
+  const ADMIN_ONLY_PATHS = ['/admin/settings', '/admin/import', '/admin/themes', '/admin/emails', '/admin/navigation', '/admin/users'];
 
   // Guard: every /admin/* route below requires a session
   fastify.addHook('preHandler', async (req: FastifyRequest, reply: FastifyReply) => {
@@ -25,8 +30,11 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     if (req.url.startsWith('/admin/login') || req.url.startsWith('/admin/setup')) return;
 
     const adminId = req.session.adminId;
-    if (!adminId || !getAdminById(adminId)) {
-      return reply.redirect('/admin/login');
+    const admin = adminId ? getAdminById(adminId) : null;
+    if (!admin) return reply.redirect('/admin/login');
+
+    if (admin.role === 'staff' && ADMIN_ONLY_PATHS.some(p => req.url.startsWith(p))) {
+      return reply.redirect('/admin');
     }
   });
 
@@ -42,6 +50,7 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       await app.register(emailRoutes);
       await app.register(importRoutes);
       await app.register(navigationRoutes);
+      await app.register(usersRoutes);
     },
     { prefix: '/admin' },
   );
@@ -52,12 +61,16 @@ async function dashboardHandler(req: FastifyRequest, reply: FastifyReply) {
   const admin = getAdminById(adminId)!;
   const settings = getAllSettings();
   const orderCount = countOrders();
+  const productCount = queryOne<{ n: number }>('SELECT COUNT(*) AS n FROM products')?.n ?? 0;
+  const analytics = getAnalyticsSummary();
 
   return reply.type('text/html').send(
     render('dashboard', {
       admin,
       settings,
-      stats: { orderCount },
+      stats: { orderCount, productCount },
+      isEmpty: productCount === 0,
+      analytics,
       pageTitle: 'Dashboard',
     }),
   );

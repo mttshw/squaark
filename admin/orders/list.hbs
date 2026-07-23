@@ -35,3 +35,17 @@
   </div>
   {{/if}}
 </div>
+
+{{#if (gt totalPages 1)}}
+<div class="flex items-center justify-between mt-4 text-sm text-gray-500">
+  <span>Page {{page}} of {{totalPages}}</span>
+  <div class="flex gap-2">
+    {{#if (gt page 1)}}
+    <a href="?page={{subtract page 1}}" class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">Previous</a>
+    {{/if}}
+    {{#if (lt page totalPages)}}
+    <a href="?page={{add page 1}}" class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">Next</a>
+    {{/if}}
+  </div>
+</div>
+{{/if}}

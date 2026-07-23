@@ -60,12 +60,14 @@ export interface CartItem {
 export interface GlobalContext {
   store: {
     name: string;
+    tagline: string;
     url: string;
     logo: string | null;
     icon: string | null;
     currency: { code: string; symbol: string; position: 'before' | 'after' };
     cartLabel: string;
     cartSlug: string;
+    customerAccountsEnabled: boolean;
   };
   theme: {
     config: Record<string, Record<string, unknown>>;
@@ -169,11 +171,13 @@ export function buildGlobalContext(
   return {
     store: {
       name: settings.store_name ?? 'My Store',
+      tagline: settings.store_tagline ?? '',
       url: settings.store_url ?? 'http://localhost:3000',
       logo: settings.store_logo || null,
       icon: settings.store_icon || null,
       cartLabel: settings.cart_label || 'Cart',
       cartSlug: settings.cart_slug || 'cart',
+      customerAccountsEnabled: settings.customer_accounts_enabled !== '0',
       currency: {
         code: currencyCode,
         symbol: CURRENCY_SYMBOLS[currencyCode] ?? currencyCode,
